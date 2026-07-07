@@ -8,13 +8,20 @@ import altair as alt
 # -----------------------------
 st.set_page_config(
     page_title="World Happiness Dashboard",
+    page_icon="😊",
     layout="wide"
 )
 
 # -----------------------------
 # Load data
 # -----------------------------
-df = pd.read_csv("happiness_report_standardized.csv")
+# @st.cache_data prevents re-loading the CSV on every interaction
+@st.cache_data
+def load_data():
+    df = pd.read_csv("happiness_report_standardized.csv")
+    return df
+
+df = load_data()
 
 # Use standardized country names, but keep original names for rare duplicate cases
 df["Country_Key"] = df["Country_Standardized"]
