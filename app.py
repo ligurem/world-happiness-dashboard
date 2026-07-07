@@ -332,6 +332,10 @@ change_data["Happiness Change"] = (
     change_data["Happiness_End"] - change_data["Happiness_Start"]
 )
 
+change_data["Change Direction"] = change_data["Happiness Change"].apply(
+    lambda value: "Increase" if value >= 0 else "Decrease"
+)
+
 st.subheader(f"Changes from {start_year} to {end_year}")
 
 col1, col2, col3 = st.columns(3)
