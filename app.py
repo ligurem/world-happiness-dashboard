@@ -49,10 +49,12 @@ region_groups = {
 }
 
 
+# Collapse the dataset's finer subregions into the broader world regions used throughout the dashboard.
 def assign_group(region):
     for group, regions in region_groups.items():
         if region in regions:
             return group
+    # Preserve unmapped rows instead of dropping them from the charts.
     return "Other"
 
 
@@ -92,9 +94,25 @@ short_labels = {
     "Perceptions of corruption": "Corruption"
 }
 
+TREND_VARIABLES = [
+    *correlation_variables
+]
+
+
+@st.cache_data(show_spinner=False)
+def build_trend_tables(start_year, end_year):
+    # Cache the repeated aggregates so the charts can reuse the same summary tables on every rerun.
+    trend_data = df[df["Year"].between(start_year, end_year)].copy()
+
+    country_trends = trend_data.groupby(["Country_Key", "Year"], as_index=False)[TREND_VARIABLES].mean()
+    region_trends = trend_data.groupby(["Geographic_Group", "Year"], as_index=False)[TREND_VARIABLES].mean()
+    global_trends = trend_data.groupby("Year", as_index=False)[TREND_VARIABLES].mean()
+
+    return country_trends, region_trends, global_trends
+
 years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
-group_domain = sorted(df["Geographic_Group"].dropna().unique())
+group_domain = geographic_groups
 group_range = [COLOR_PALETTE.get(group, "#999999") for group in group_domain]
 
 # -----------------------------
@@ -103,8 +121,8 @@ group_range = [COLOR_PALETTE.get(group, "#999999") for group in group_domain]
 st.title("World Happiness Dashboard")
 
 st.markdown(
-    "Explore how happiness scores changed across countries and how happiness relates "
-    "to social and economic indicators in the World Happiness Report dataset."
+    "Explore how happiness changes across countries and how it relates to social and economic factors "
+    "in the World Happiness Report dataset."
 )
 
 # -----------------------------
@@ -129,6 +147,7 @@ geographic_group = st.sidebar.selectbox(
 
 subregion_options = sorted(df["Region_Standardized"].dropna().unique().tolist())
 if geographic_group:
+    # Narrow the subregion choices so the filters stay aligned.
     subregion_options = sorted(
         df.loc[df["Geographic_Group"] == geographic_group, "Region_Standardized"]
         .dropna()
@@ -150,7 +169,7 @@ st.header("1. Happiness Trends Over Time")
 
 st.markdown(
     "Track average happiness over the selected year range. "
-    "Use the World Region and Subregion filters and optionally highlight countries."
+    "Use the World Region and Subregion filters to narrow the view, then highlight countries if needed."
 )
 
 country_pool = df.copy()
@@ -159,15 +178,17 @@ if geographic_group:
 if subregion:
     country_pool = country_pool[country_pool["Region_Standardized"] == subregion]
 
+# Keep the country picker scoped to the active filters so it only offers relevant options.
 country_options = sorted(country_pool["Country_Key"].dropna().unique().tolist())
 selected_countries = st.multiselect(
-    "Country",
+    "Countries",
     options=country_options,
     placeholder="All countries"
 )
 
 trend_data = df[df["Year"].between(start_year, end_year)].copy()
 
+# Show the global average first so every trend chart has a stable reference line.
 global_avg = (
     trend_data
     .groupby("Year", as_index=False)["Happiness score"]
@@ -189,7 +210,7 @@ global_line = (
         y=alt.Y("Avg Score:Q", title="Happiness score", scale=alt.Scale(domain=[0, 10])),
         tooltip=[
             alt.Tooltip("Year:O", title="Year"),
-            alt.Tooltip("Avg Score:Q", title="Global Avg.", format=".2f")
+            alt.Tooltip("Avg Score:Q", title="Global average", format=".2f")
         ]
     )
 )
@@ -200,12 +221,13 @@ global_label = (
     .encode(
         x=alt.X("Year:O"),
         y=alt.Y("Avg Score:Q"),
-        text=alt.value("Global Avg.")
+        text=alt.value("Global average")
     )
 )
 
 trend_layers = [global_line, global_label]
 
+# Layer any selected region average and country series on top of the global baseline.
 overlay_frames = []
 overlay_labels = []
 overlay_colors = []
@@ -241,7 +263,7 @@ if selected_countries:
 
 if overlay_frames:
     overlay_data = pd.concat(overlay_frames, ignore_index=True)
-    overlay_title = "World Region / Country"
+    overlay_title = "World region / country"
 
     overlay_line = (
         alt.Chart(overlay_data)
@@ -261,8 +283,8 @@ if overlay_frames:
             ),
             tooltip=[
                 alt.Tooltip("Year:O", title="Year"),
-                alt.Tooltip("Label:N", title="World Region / Country"),
-                alt.Tooltip("Avg Score:Q", title="Avg Score", format=".2f")
+                alt.Tooltip("Label:N", title=overlay_title),
+                alt.Tooltip("Avg Score:Q", title="Average score", format=".2f")
             ]
         )
     )
@@ -280,15 +302,15 @@ st.divider()
 # -----------------------------
 # Section 2: Happiness shifts
 # -----------------------------
-st.header("2. Where Did Happiness Change the Most?")
+st.header("2. Where Happiness Changed Most")
 
 st.markdown(
-    "This section compares countries between two selected years. "
-    "The bar chart shows the largest happiness increases and decreases."
+    "Compare countries between two selected years. "
+    "The bar chart highlights the largest gains and losses."
 )
 
 if start_year >= end_year:
-    st.warning("Choose an end year that comes after the start year.")
+    st.warning("Choose an end year after the start year.")
     st.stop()
 
 filtered = df.copy()
@@ -332,6 +354,7 @@ change_data["Happiness Change"] = (
     change_data["Happiness_End"] - change_data["Happiness_Start"]
 )
 
+# Split the change values into direction buckets so the bar chart can color increases and decreases differently.
 change_data["Change Direction"] = change_data["Happiness Change"].apply(
     lambda value: "Increase" if value >= 0 else "Decrease"
 )
@@ -355,15 +378,42 @@ with col3:
         "Country_Key"
     ]
     best_change = change_data["Happiness Change"].max()
-    st.metric("Biggest increase", best_country, round(best_change, 2))
+    st.metric("Largest increase", best_country, round(best_change, 2))
 
 top_left, top_right = st.columns(2)
 
-selected_country = None
+if "selected_country" not in st.session_state:
+    st.session_state.selected_country = None
+
+
+def extract_selected_country(selection_payload):
+    # Streamlit can emit a few nested selection shapes, so flatten them to one country key.
+    if selection_payload is None:
+        return None
+    if isinstance(selection_payload, str):
+        return selection_payload or None
+    if isinstance(selection_payload, dict):
+        if "Country_Key" in selection_payload:
+            return extract_selected_country(selection_payload.get("Country_Key"))
+        if "points" in selection_payload:
+            return extract_selected_country(selection_payload.get("points"))
+        if "selection" in selection_payload:
+            return extract_selected_country(selection_payload.get("selection"))
+        if "country_select" in selection_payload:
+            return extract_selected_country(selection_payload.get("country_select"))
+    if isinstance(selection_payload, list):
+        for item in selection_payload:
+            if isinstance(item, dict) and "Country_Key" in item:
+                selected_value = extract_selected_country(item.get("Country_Key"))
+                if selected_value:
+                    return selected_value
+            if isinstance(item, str) and item:
+                return item
+    return None
 
 with top_left:
     st.subheader("Largest Happiness Changes")
-    st.caption("Click a bar to select a country. Double-click empty chart space to clear selection.")
+    st.caption("Click a bar to select a country. Double-click empty space to clear the selection.")
 
     if "n_countries" not in st.session_state:
         st.session_state.n_countries = 10
@@ -377,14 +427,15 @@ with top_left:
         name="country_select",
         fields=["Country_Key"],
         on="click",
-        clear="dblclick"
+        clear="dblclick",
+        toggle=False
     )
 
     bar_chart = (
         alt.Chart(bar_data)
         .mark_bar()
         .encode(
-            x=alt.X("Happiness Change:Q", title="Change in happiness score"),
+            x=alt.X("Happiness Change:Q", title="Happiness change"),
             y=alt.Y(
                 "Country_Key:N",
                 title="",
@@ -394,16 +445,12 @@ with top_left:
                     order="ascending"
                 )
             ),
-            color=alt.condition(
-                country_select,
-                alt.Color(
-                    "Change Direction:N",
-                    scale=alt.Scale(
-                        domain=["Increase", "Decrease"],
-                        range=["#2E8B57", "#C0392B"]
-                    )
-                ),
-                alt.value("#BDBDBD")
+            color=alt.Color(
+                "Change Direction:N",
+                scale=alt.Scale(
+                    domain=["Increase", "Decrease"],
+                    range=["#2E8B57", "#C0392B"]
+                )
             ),
             tooltip=[
                 alt.Tooltip("Country_Key:N", title="Country"),
@@ -413,12 +460,12 @@ with top_left:
                 alt.Tooltip("Happiness_End:Q", title=f"Happiness {end_year}", format=".2f"),
                 alt.Tooltip("Happiness Change:Q", title="Happiness Change", format=".2f")
             ],
-            opacity=alt.condition(country_select, alt.value(1.0), alt.value(0.7))
+            opacity=alt.condition(country_select, alt.value(1.0), alt.value(0.35))
         )
         .add_params(country_select)
         .properties(
             height=600,
-            title="Countries with the Biggest Happiness Increases and Decreases"
+            title="Countries with the Largest Happiness Changes"
         )
     )
 
@@ -438,49 +485,41 @@ with top_left:
 
     if isinstance(selection_state, dict):
         selected_payload = selection_state.get("selection", {}).get("country_select")
-        if isinstance(selected_payload, list) and selected_payload:
-            first_item = selected_payload[0]
-            if isinstance(first_item, dict):
-                selected_country = first_item.get("Country_Key")
-        elif isinstance(selected_payload, dict):
-            selected_value = selected_payload.get("Country_Key")
-            if isinstance(selected_value, list):
-                selected_country = selected_value[0] if selected_value else None
-            else:
-                selected_country = selected_value
+        if selected_payload is None and "country_select" in selection_state:
+            selected_payload = selection_state.get("country_select")
+
+        if selected_payload in (None, [], {}):
+            st.session_state.selected_country = None
+        else:
+            selected_country_candidate = extract_selected_country(selected_payload)
+            if selected_country_candidate in set(change_data["Country_Key"]):
+                st.session_state.selected_country = selected_country_candidate
+
+selected_country = st.session_state.selected_country
 
 with top_right:
     st.subheader("Indexed Factor Trends")
-    st.caption("Click legend items to hide or show metrics and automatically rescale the y-axis.")
+    st.caption("Click legend items to show or hide metrics; the chart rescales automatically.")
 
-    trend_variables = [
-        "Happiness score",
-        "GDP per capita",
-        "Social support",
-        "Healthy life expectancy",
-        "Freedom to make life choices",
-        "Generosity",
-        "Perceptions of corruption"
-    ]
     full_years = list(range(start_year, end_year + 1))
-    trend_data = df[df["Year"].between(start_year, end_year)].copy()
+    country_trends, region_trends, global_trends = build_trend_tables(start_year, end_year)
 
     if selected_country:
-        trend_data = (
-            trend_data[trend_data["Country_Key"] == selected_country]
-            .groupby("Year", as_index=False)[trend_variables]
-            .mean()
-        )
+        trend_data = country_trends[country_trends["Country_Key"] == selected_country].copy()
         trend_title = f"Selected country: {selected_country}"
-    elif geographic_group:
-        trend_data = (
-            trend_data[trend_data["Geographic_Group"] == geographic_group]
-            .groupby("Year", as_index=False)[trend_variables]
+    elif subregion:
+        subregion_trends = (
+            trend_data[trend_data["Region_Standardized"] == subregion]
+            .groupby("Year", as_index=False)[TREND_VARIABLES]
             .mean()
         )
+        trend_data = subregion_trends.copy()
+        trend_title = f"Subregion average: {subregion}"
+    elif geographic_group:
+        trend_data = region_trends[region_trends["Geographic_Group"] == geographic_group].copy()
         trend_title = f"World Region average: {geographic_group}"
     else:
-        trend_data = trend_data.groupby("Year", as_index=False)[trend_variables].mean()
+        trend_data = global_trends.copy()
         trend_title = "Global average"
 
     trend_data = (
@@ -492,7 +531,7 @@ with top_right:
     )
 
     trend_long = (
-        trend_data[["Year"] + trend_variables]
+        trend_data[["Year"] + TREND_VARIABLES]
         .melt(id_vars="Year", var_name="Metric", value_name="Value")
         .sort_values(["Metric", "Year"])
     )
@@ -507,48 +546,37 @@ with top_right:
         trend_long["Indexed Change"] = trend_long["Value"] - trend_long["Baseline"]
         trend_long["Metric Short"] = trend_long["Metric"].map(short_labels)
 
-        factor_order = trend_variables[1:]
+        factor_order = TREND_VARIABLES[1:]
         factor_short_order = [short_labels[metric] for metric in factor_order]
+        metric_short_order = [short_labels["Happiness score"]] + factor_short_order
         metric_colors = [
-            "#1F3A8A",
-            "#4E79A7",
+            COLOR_PALETTE["Global Average"],
             "#59A14F",
             "#F28E2B",
             "#E15759",
-            "#76B7B2"
+            "#76B7B2",
+            "#B07AA1",
+            "#9D9D9D"
         ]
 
+        # Start with every metric selected; legend clicks remove individual series from the view.
         factor_select = alt.selection_point(
             fields=["Metric Short"],
             bind="legend",
-            empty="all"
+            empty="all",
+            toggle="true",
+            value=[{"Metric Short": metric} for metric in metric_short_order]
         )
 
-        happiness_long = trend_long[trend_long["Metric"] == "Happiness score"].copy()
-        factor_long = trend_long[trend_long["Metric"] != "Happiness score"].copy()
-
-        happiness_line = (
-            alt.Chart(happiness_long)
-            .mark_line(strokeWidth=3, point=True, color=COLOR_PALETTE["Global Average"])
-            .encode(
-                x=alt.X("Year:O", title="Year"),
-                y=alt.Y("Indexed Change:Q", title=f"Change since {start_year}", scale=alt.Scale(zero=True)),
-                tooltip=[
-                    alt.Tooltip("Year:O", title="Year"),
-                    alt.Tooltip("Value:Q", title="Happiness score", format=".2f"),
-                    alt.Tooltip("Indexed Change:Q", title="Change from baseline", format=".2f")
-                ]
-            )
-        )
-
-        trend_base = alt.Chart(factor_long).encode(
+        trend_base = alt.Chart(trend_long).encode(
             x=alt.X("Year:O", title="Year"),
             y=alt.Y("Indexed Change:Q", title=f"Change since {start_year}"),
             color=alt.Color(
                 "Metric Short:N",
-                sort=factor_short_order,
-                scale=alt.Scale(domain=factor_short_order, range=metric_colors),
-                title="Metric"
+                sort=metric_short_order,
+                scale=alt.Scale(domain=metric_short_order, range=metric_colors),
+                title="Metric",
+                legend=alt.Legend(symbolOpacity=1, labelOpacity=1)
             )
         )
 
@@ -563,16 +591,24 @@ with top_right:
             .mark_line(strokeWidth=2, point=True)
             .add_params(factor_select)
             .transform_filter(factor_select)
-            .encode(tooltip=[
+            .encode(
+                # Keep Happiness visually distinct with a dashed stroke while leaving the legend behavior shared.
+                strokeDash=alt.condition(
+                    alt.datum["Metric Short"] == "Happiness",
+                    alt.value([4, 4]),
+                    alt.value([1, 0])
+                ),
+                tooltip=[
                 alt.Tooltip("Year:O", title="Year"),
                 alt.Tooltip("Metric Short:N", title="Metric"),
                 alt.Tooltip("Value:Q", title="Value", format=".2f"),
-                alt.Tooltip("Indexed Change:Q", title="Change from baseline", format=".2f")
-            ])
+                alt.Tooltip("Indexed Change:Q", title="Change from baseline", format=".2f"),
+            ]
+            )
         )
 
         indexed_trend_chart = (
-            alt.layer(zero_rule, happiness_line, trend_lines)
+            alt.layer(zero_rule, trend_lines)
             .properties(height=600, title=trend_title)
         )
 
@@ -600,6 +636,7 @@ correlation_year = st.selectbox(
 
 correlation_data = df.copy()
 
+# Reapply the same geographic filters so the matrix and scatterplot stay in sync with the rest of the dashboard.
 if geographic_group:
     correlation_data = correlation_data[
         correlation_data["Geographic_Group"] == geographic_group
@@ -725,6 +762,7 @@ with scatter_col:
     relationship_scatter = relationship_points
 
     # Add trend line
+    # Only add the regression line when there are enough unique x-values to fit something meaningful.
     if len(relationship_data) >= 2 and relationship_data[x_variable].nunique() > 1:
         trend_line = (
             alt.Chart(relationship_data)
@@ -745,7 +783,19 @@ with scatter_col:
     st.altair_chart(relationship_scatter, use_container_width=True)
 
 st.info(
-    "The first section compares happiness changes over time. "
-    "The second section shows the overall correlation structure and lets users choose "
-    "a relationship to explore with a scatterplot and trend line."
+    "The first section shows happiness trajectories over time. "
+    "The second highlights the largest changes between two years. "
+    "The third lets you explore correlations with a scatterplot and trend line."
+)
+
+st.write("")
+
+st.caption(
+    "Source: raw dataset from Kaggle, World Happiness 2015-2024 by Yadira Espinoza "
+    "(https://www.kaggle.com/datasets/yadiraespinoza/world-happiness-2015-2024)."
+)
+
+st.caption(
+    "The World Happiness Report is published by the Wellbeing Research Centre at the University of Oxford "
+    "in partnership with Gallup, the UN Sustainable Development Solutions Network, and an independent editorial board."
 )
