@@ -568,9 +568,13 @@ with top_right:
             value=[{"Metric Short": metric} for metric in metric_short_order]
         )
 
+        trend_value_field = "Indexed Change"
+        trend_value_title = f"Change since {start_year}"
+        trend_y_encoding = alt.Y(f"{trend_value_field}:Q", title=trend_value_title)
+
         trend_base = alt.Chart(trend_long).encode(
             x=alt.X("Year:O", title="Year"),
-            y=alt.Y("Indexed Change:Q", title=f"Change since {start_year}"),
+            y=trend_y_encoding,
             color=alt.Color(
                 "Metric Short:N",
                 sort=metric_short_order,
@@ -600,7 +604,7 @@ with top_right:
                 ),
                 tooltip=[
                 alt.Tooltip("Year:O", title="Year"),
-                alt.Tooltip("Metric Short:N", title="Metric"),
+                alt.Tooltip("Metric:N", title="Metric"),
                 alt.Tooltip("Value:Q", title="Value", format=".2f"),
                 alt.Tooltip("Indexed Change:Q", title="Change from baseline", format=".2f"),
             ]
