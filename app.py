@@ -219,7 +219,7 @@ subregion = st.sidebar.selectbox(
 # -----------------------------
 # Section 1: World choropleth
 # -----------------------------
-st.header("1. World Happiness Choropleth")
+st.header("1. Global Happiness Map")
 
 st.markdown(
     "See how the average happiness score changes across countries for the selected year range. "
@@ -298,7 +298,7 @@ else:
                 "scale": {"signal": "scale"},
                 "rotate": [{"signal": "rotateX"}, 0, 0],
                 "center": [0, {"signal": "centerY"}],
-                "translate": [{"signal": "tx"}, {"signal": "ty + 38"}],
+                "translate": [{"signal": "tx"}, {"signal": "ty + 58"}],
             }
         ],
         "data": [
@@ -352,6 +352,9 @@ else:
         <style>
             .world-happiness-map-shell {{
                 font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            }}
+            .world-happiness-map-shell #world-happiness-map {{
+                margin-top: 0;
             }}
             .world-happiness-legend {{
                 display: flex;
@@ -432,7 +435,7 @@ else:
                     <div class="world-happiness-legend-bar"></div>
                     <div class="world-happiness-legend-label">Higher happiness</div>
                 </div>
-                <div class="world-happiness-legend-note">Color intensity increases from low to high average happiness.</div>
+                # <div class="world-happiness-legend-note">Color intensity increases from low to high average happiness.</div>
             </div>
             <div id="world-happiness-tooltip" class="world-happiness-tooltip"></div>
         </div>
