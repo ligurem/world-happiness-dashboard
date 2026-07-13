@@ -118,7 +118,7 @@ short_labels = {
     "Perceptions of corruption": "Corruption"
 }
 
-# Trend variables list (reused across section 2)
+# Trend variables list (reused across section 3)
 TREND_VARIABLES = [*correlation_variables]
 
 # Cache repeated aggregates so charts can reuse summary tables on every rerun
@@ -500,7 +500,7 @@ else:
     st.caption("Tip: hold Ctrl on Windows/Linux or Cmd on Mac while scrolling to zoom; drag to pan.")
 
 # -----------------------------
-# Section 1: Happiness trends
+# Section 2: Happiness trends
 # -----------------------------
 st.header("2. Happiness Trends Over Time")
 
@@ -721,9 +721,9 @@ st.divider()
 
 
 # -----------------------------
-# Section 2: Happiness shifts (Melissa's version)
+# Section 3: Happiness shifts (Melissa's version)
 # -----------------------------
-st.header("2. Where Happiness Changed Most")
+st.header("3. Where Happiness Changed Most")
 
 st.markdown(
     "Compare countries between two selected years. "
@@ -950,11 +950,11 @@ else:
 
 
 # -----------------------------
-# Section 3: Correlation explorer
+# Section 4: Correlation explorer
 # -----------------------------
 st.divider()
 
-st.header("3. Correlation Explorer")
+st.header("4. Correlation Explorer")
 
 st.markdown(
     "This section shows how happiness and related factors are correlated. "
