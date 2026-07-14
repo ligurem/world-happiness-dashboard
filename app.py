@@ -1,8 +1,8 @@
 import json
+from pathlib import Path
 import streamlit as st
 import pandas as pd
 import altair as alt
-import pycountry
 import streamlit.components.v1 as components
 
 
@@ -61,6 +61,35 @@ def assign_group(region):
 
 df["Geographic_Group"] = df["Region_Standardized"].apply(assign_group)
 
+COUNTRY_NUMERIC_CODES_FILE = (
+    Path(__file__).resolve().parent
+    / ".venv"
+    / "Lib"
+    / "site-packages"
+    / "pycountry"
+    / "databases"
+    / "iso3166-1.json"
+)
+
+
+@st.cache_data(show_spinner=False)
+def load_country_numeric_codes():
+    with COUNTRY_NUMERIC_CODES_FILE.open("r", encoding="utf-8") as file_handle:
+        country_data = json.load(file_handle)["3166-1"]
+
+    country_codes = {}
+    for country in country_data:
+        numeric_code = f"{int(country['numeric']):03d}"
+        country_codes[country["name"]] = numeric_code
+        if "common_name" in country:
+            country_codes[country["common_name"]] = numeric_code
+        if "official_name" in country:
+            country_codes[country["official_name"]] = numeric_code
+    return country_codes
+
+
+COUNTRY_NUMERIC_CODES = load_country_numeric_codes()
+
 COUNTRY_NAME_ALIASES = {
     "Congo Republic": "Congo",
     "DR Congo": "Congo, The Democratic Republic of the",
@@ -76,12 +105,13 @@ def country_name_to_numeric_code(country_name):
 
     lookup_value = COUNTRY_NAME_ALIASES.get(country_name, country_name)
     if str(lookup_value).isdigit():
-        return int(lookup_value)
+        return f"{int(lookup_value):03d}"
 
-    try:
-        return int(pycountry.countries.lookup(lookup_value).numeric)
-    except LookupError:
+    numeric_code = COUNTRY_NUMERIC_CODES.get(str(lookup_value))
+    if numeric_code is None:
         return pd.NA
+
+    return numeric_code
 
 COLOR_PALETTE = {
     "Africa": "#E15759",
@@ -272,13 +302,10 @@ if country_map_data.empty:
     st.info("No country data available for the selected filters.")
 
 else:
-    country_map_data["country_code"] = (
-        country_map_data["country_code"]
-        .astype(int)
-    )
+    country_map_data["country_code"] = country_map_data["country_code"].astype(str)
 
     world = alt.topo_feature(
-        alt.datasets.url("world_110m"),
+        "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json",
         "countries"
     )
 
