@@ -246,6 +246,12 @@ subregion = st.sidebar.selectbox(
     placeholder="All subregions"
 )
 
+current_country_filter_signature = (geographic_group, subregion)
+previous_country_filter_signature = st.session_state.get("country_filter_signature")
+if previous_country_filter_signature != current_country_filter_signature:
+    st.session_state["selected_countries"] = []
+    st.session_state["country_filter_signature"] = current_country_filter_signature
+
 # -----------------------------
 # Section 1: World choropleth
 # -----------------------------
