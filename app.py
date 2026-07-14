@@ -182,14 +182,6 @@ years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
 group_domain = sorted(df["Geographic_Group"].dropna().unique())
 group_range = [COLOR_PALETTE.get(group, "#999999") for group in group_domain]
-selected_countries_for_map = st.session_state.get("selected_countries", []) or []
-selected_country_codes = set(
-    df.loc[df["Country_Key"].isin(selected_countries_for_map), "Country_Standardized"]
-    .dropna()
-    .map(country_name_to_numeric_code)
-    .dropna()
-    .tolist()
-)
 
 # -----------------------------
 # Title
@@ -251,6 +243,15 @@ previous_country_filter_signature = st.session_state.get("country_filter_signatu
 if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
+
+selected_countries_for_map = st.session_state.get("selected_countries", []) or []
+selected_country_codes = set(
+    df.loc[df["Country_Key"].isin(selected_countries_for_map), "Country_Standardized"]
+    .dropna()
+    .map(country_name_to_numeric_code)
+    .dropna()
+    .tolist()
+)
 
 # -----------------------------
 # Section 1: World choropleth
