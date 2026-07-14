@@ -1,5 +1,5 @@
 import json
-from pathlib import Path
+from importlib import resources
 import streamlit as st
 import pandas as pd
 import altair as alt
@@ -61,20 +61,13 @@ def assign_group(region):
 
 df["Geographic_Group"] = df["Region_Standardized"].apply(assign_group)
 
-COUNTRY_NUMERIC_CODES_FILE = (
-    Path(__file__).resolve().parent
-    / ".venv"
-    / "Lib"
-    / "site-packages"
-    / "pycountry"
-    / "databases"
-    / "iso3166-1.json"
-)
-
 
 @st.cache_data(show_spinner=False)
 def load_country_numeric_codes():
-    with COUNTRY_NUMERIC_CODES_FILE.open("r", encoding="utf-8") as file_handle:
+    with resources.files("pycountry").joinpath("databases/iso3166-1.json").open(
+        "r",
+        encoding="utf-8"
+    ) as file_handle:
         country_data = json.load(file_handle)["3166-1"]
 
     country_codes = {}
