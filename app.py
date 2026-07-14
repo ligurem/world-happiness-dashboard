@@ -113,29 +113,6 @@ def country_name_to_numeric_code(country_name):
 
     return numeric_code
 
-
-def extract_selected_countries(selection_payload):
-    if selection_payload is None:
-        return []
-    if isinstance(selection_payload, str):
-        return [selection_payload] if selection_payload else []
-    if isinstance(selection_payload, dict):
-        for key in ("Country", "Country_Key", "selection", "points", "map_country_select"):
-            if key in selection_payload:
-                return extract_selected_countries(selection_payload.get(key))
-    if isinstance(selection_payload, list):
-        selected_values = []
-        for item in selection_payload:
-            if isinstance(item, dict):
-                for key in ("Country", "Country_Key"):
-                    if key in item:
-                        selected_values.extend(extract_selected_countries(item.get(key)))
-                        break
-            elif isinstance(item, str) and item:
-                selected_values.append(item)
-        return list(dict.fromkeys(selected_values))
-    return []
-
 COLOR_PALETTE = {
     "Africa": "#E15759",
     "Asia": "#F28E2B",
@@ -398,15 +375,6 @@ else:
                 ]
             )
         )
-        .add_params(
-            alt.selection_point(
-                name="map_country_select",
-                fields=["Country"],
-                on="click",
-                clear="dblclick",
-                toggle=False
-            )
-        )
         .transform_filter(
             "isValid(datum.avg_happiness)"
         )
@@ -485,15 +453,6 @@ else:
             .transform_filter(
                 "isValid(datum.avg_happiness) && datum.is_selected_country"
             )
-            .add_params(
-                alt.selection_point(
-                    name="map_country_select",
-                    fields=["Country"],
-                    on="click",
-                    clear="dblclick",
-                    toggle=False
-                )
-            )
             .encode(
                 tooltip=[
                     alt.Tooltip(
@@ -527,25 +486,6 @@ else:
         map_chart = map_base_chart
 
     map_chart = map_chart.configure_view(strokeWidth=0)
-
-    selection_state = st.altair_chart(
-        map_chart,
-        use_container_width=True,
-        on_select="rerun",
-        selection_mode=["map_country_select"]
-    )
-
-    if isinstance(selection_state, dict):
-        selected_payload = selection_state.get("selection", {}).get("map_country_select")
-        if selected_payload is None and "map_country_select" in selection_state:
-            selected_payload = selection_state.get("map_country_select")
-
-        selected_from_map = extract_selected_countries(selected_payload)
-        current_selected = st.session_state.get("selected_countries", []) or []
-
-        if selected_from_map != current_selected:
-            st.session_state.selected_countries = selected_from_map
-            st.rerun()
 
     map_column, spacer_column = st.columns([6, 1])
 
@@ -585,6 +525,11 @@ else:
             </div>
             """,
             unsafe_allow_html=True
+        )
+
+        st.altair_chart(
+            map_chart,
+            use_container_width=True
         )
 
 # -----------------------------
