@@ -490,7 +490,7 @@ else:
 
     map_chart = map_chart.configure_view(strokeWidth=0)
 
-    map_column, spacer_column = st.columns([6, 1])
+    map_column, explainer_column = st.columns([5, 2])
 
     with map_column:
         st.markdown(
@@ -533,6 +533,15 @@ else:
         st.altair_chart(
             map_chart,
             use_container_width=True
+        )
+
+    with explainer_column:
+        st.info(
+            "**What does happiness score mean?**\n"
+            "- It is a **score out of 10** for national life satisfaction and well-being.\n"
+            "- It comes from one life-evaluation question called the **Cantril Ladder**: people rate their life from **0** (worst possible life) to **10** (best possible life).\n"
+            "- The question does not directly ask about happiness, so it can be understood across languages and cultures.\n"
+            "- The data have been collected by the **Gallup World Poll** since 2005 and analyzed by independent experts."
         )
 
 # -----------------------------
