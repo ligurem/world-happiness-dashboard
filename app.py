@@ -1107,15 +1107,18 @@ corr_heatmap = (
     )
 )
 
-st.altair_chart(corr_heatmap, use_container_width=True)
+heatmap_column, explainer_column = st.columns([4, 2])
 
-st.info(
-    "**What do these scores mean?**\n\n"
-    "Correlation values range from -1 to 1:\n"
-    "- **1**: the factor and happiness usually **rise together**.\n"
-    "- **-1**: as one goes up, the other tends to **fall**.\n"
-    "- **0**: there is **little clear relationship** in this data."
-)
+with heatmap_column:
+    st.altair_chart(corr_heatmap, use_container_width=True)
+
+with explainer_column:
+    st.info(
+        "**What do these scores mean?**\n"
+        "- **1**: the factor and happiness usually **rise together**.\n"
+        "- **-1**: as one goes up, the other tends to **fall**.\n"
+        "- **0**: there is **little clear relationship** in this data."
+    )
 
 # Scatter plot — full width
 # Scatter plot — full width
