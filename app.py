@@ -1037,16 +1037,12 @@ corr_happiness = (
     .drop(index="Happiness score")
     .reset_index()
     .rename(columns={"index": "Variable", "Happiness score": "Correlation"})
-    .assign(AbsoluteCorrelation=lambda frame: frame["Correlation"].abs())
-    .sort_values("AbsoluteCorrelation", ascending=False)
+    .sort_values("Correlation", ascending=False)
 )
 
 corr_happiness["Short Label"] = corr_happiness["Variable"].map(short_labels)
-corr_happiness["Is Top Factor"] = False
-if not corr_happiness.empty:
-    corr_happiness.loc[corr_happiness.index[0], "Is Top Factor"] = True
 
-# Variable order sorted by strength of association
+# Variable order sorted by correlation value
 sorted_labels = corr_happiness["Short Label"].tolist()
 
 # Add a dummy column to create a single-row heatmap
@@ -1099,27 +1095,8 @@ heatmap_text = (
     )
 )
 
-top_factor_border = (
-    alt.Chart(corr_happiness[corr_happiness["Is Top Factor"]])
-    .mark_rect(fillOpacity=0, stroke="#1F3A8A", strokeWidth=3)
-    .encode(
-        x=alt.X("Short Label:N", sort=sorted_labels),
-        y=alt.Y("Row:N", title=None, axis=alt.Axis(labels=False, ticks=False))
-    )
-)
-
-top_factor_text = (
-    alt.Chart(corr_happiness[corr_happiness["Is Top Factor"]])
-    .mark_text(fontSize=12, fontWeight="bold", color="#1F3A8A")
-    .encode(
-        x=alt.X("Short Label:N", sort=sorted_labels),
-        y=alt.Y("Row:N"),
-        text=alt.Text("Correlation:Q", format=".2f")
-    )
-)
-
 corr_heatmap = (
-    alt.layer(heatmap_row, heatmap_text, top_factor_border, top_factor_text)
+    alt.layer(heatmap_row, heatmap_text)
     .properties(
         width="container",
         height=200,
