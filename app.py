@@ -538,10 +538,10 @@ else:
     with explainer_column:
         st.info(
             "**What does happiness score mean?**\n"
-            "- It is a **score out of 10** for national life satisfaction and well-being.\n"
-            "- It comes from one life-evaluation question called the **Cantril Ladder**: people rate their life from **0** (worst possible life) to **10** (best possible life).\n"
-            "- The question does not directly ask about happiness, so it can be understood across languages and cultures.\n"
-            "- The data have been collected by the **Gallup World Poll** since 2005 and analyzed by independent experts."
+            "- **Score out of 10** for life satisfaction and well-being.\n"
+            "- Based on the **Cantril Ladder**: **0** is worst, **10** is best.\n"
+            "- It avoids the word happiness, so it translates more easily.\n"
+            "- Collected by the **Gallup World Poll** since 2005 and analyzed by independent experts."
         )
 
 # -----------------------------
