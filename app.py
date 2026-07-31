@@ -537,11 +537,12 @@ else:
 
     with explainer_column:
         st.info(
-            "**What does happiness score mean?**\n"
+            "**How is happiness measured?**\n"
             "- **Score out of 10** for life satisfaction and well-being.\n"
-            "- Based on the **Cantril Ladder**: **0** is worst, **10** is best.\n"
+            "- It is **self-reported** by respondents using the **Cantril Ladder**: **0** is worst, **10** is best.\n"
             "- It avoids the word happiness, so it translates more easily.\n"
-            "- Collected by the **Gallup World Poll** since 2005 and analyzed by independent experts."
+            "- Collected by the **Gallup World Poll** since 2005 and analyzed by independent experts.\n"
+            "Learn more at [worldhappiness.report/faq](https://www.worldhappiness.report/faq/)"
         )
 
 # -----------------------------
