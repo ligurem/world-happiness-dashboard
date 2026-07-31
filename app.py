@@ -21,7 +21,7 @@ st.set_page_config(
 # @st.cache_data prevents re-loading the CSV on every interaction
 @st.cache_data
 def load_data():
-    df = pd.read_csv("happiness_report_standardized.csv")
+    df = pd.read_csv("happiness_report_standardized1.csv")
     return df
 
 df = load_data()
