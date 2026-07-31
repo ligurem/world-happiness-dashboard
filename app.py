@@ -1124,30 +1124,28 @@ with explainer_column:
         "- **0**: there is **little clear relationship** in this data."
     )
 
-# Scatter plot — full width
-# Scatter plot — full width
-st.subheader("Selected Relationship")
+st.subheader("A Closer Look at One Relationship")
 
-x_variable = st.selectbox(
-    "X-axis variable",
-    [v for v in correlation_variables if v != "Happiness score"],
-    index=None,
-    placeholder="Select a variable to compare with Happiness score"
+st.markdown(
+    "Pick one factor from the heatmap above to see how it relates to happiness score in more detail. "
+    "The scatterplot keeps happiness score on the y-axis so you can focus on the pattern for the selected factor."
 )
 
-y_variable = st.selectbox(
-    "Y-axis variable",
-    correlation_variables,
-    index=correlation_variables.index("Happiness score")
+x_variable = st.selectbox(
+    "Choose a factor to explore",
+    [v for v in correlation_variables if v != "Happiness score"],
+    index=None,
+    placeholder="Select a factor from the heatmap"
 )
 
 if x_variable is None:
-    st.info("Select an X-axis variable above to explore the relationship with Happiness score.")
+    st.info("Select a factor above to explore how it relates to happiness score.")
 else:
+    y_variable = "Happiness score"
     selected_corr = corr.loc[y_variable, x_variable]
 
     st.markdown(
-        f"Showing **{y_variable}** by **{x_variable}** "
+        f"Showing **{x_variable}** against **{y_variable}** "
         f"with correlation **{selected_corr:.2f}**."
     )
 
