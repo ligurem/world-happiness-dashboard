@@ -1219,10 +1219,16 @@ else:
     else:
         relationship_scatter = relationship_points
 
+    scatter_title = f"{y_variable} vs. {x_variable}"
+    if subregion:
+        scatter_title = f"{scatter_title} in {subregion}"
+    elif geographic_group:
+        scatter_title = f"{scatter_title} in {geographic_group}"
+
     relationship_scatter = relationship_scatter.properties(
         width="container",
         height=500,
-        title=f"{y_variable} vs. {x_variable}"
+        title=scatter_title
     )
 
     st.altair_chart(relationship_scatter, use_container_width=True)
