@@ -822,7 +822,7 @@ else:
         st.caption("Click a bar to select a country. Double-click empty space to clear the selection.")
 
         if "n_countries" not in st.session_state:
-            st.session_state.n_countries = 10
+            st.session_state.n_countries = 20
 
         biggest_drops = change_data.nsmallest(st.session_state.n_countries, "Happiness Change")
         biggest_gains = change_data.nlargest(st.session_state.n_countries, "Happiness Change")
@@ -867,8 +867,6 @@ else:
             bar_chart, use_container_width=True,
             on_select="rerun", selection_mode=["country_select"]
         )
-
-        st.slider("Countries to show", 5, 20, key="n_countries")
 
         if isinstance(selection_state, dict):
             selected_payload = selection_state.get("selection", {}).get("country_select")
