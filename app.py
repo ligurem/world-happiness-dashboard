@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 from importlib import resources
 import streamlit as st
 import pandas as pd
@@ -18,13 +19,15 @@ st.set_page_config(
 # -----------------------------
 # Load data
 # -----------------------------
+DATA_FILE = Path(__file__).with_name("happiness_report_standardized1.csv")
+
 # @st.cache_data prevents re-loading the CSV on every interaction
 @st.cache_data
-def load_data():
-    df = pd.read_csv("happiness_report_standardized1.csv")
+def load_data(csv_path, last_modified):
+    df = pd.read_csv(csv_path)
     return df
 
-df = load_data()
+df = load_data(str(DATA_FILE), DATA_FILE.stat().st_mtime)
 
 # Use standardized country names, but keep original names for rare duplicate cases
 df["Country_Key"] = df["Country_Standardized"]
