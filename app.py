@@ -1107,15 +1107,15 @@ corr_heatmap = (
     )
 )
 
-show_scores_meaning = st.toggle("What do these scores mean?", value=False)
-if show_scores_meaning:
-    st.info(
-        "- **1**: the factor and happiness usually **rise together**.\n"
-        "- **-1**: as one goes up, the other tends to **fall**.\n"
-        "- **0**: there is **little clear relationship** in this data."
-    )
-
 st.altair_chart(corr_heatmap, use_container_width=True)
+
+st.info(
+    "**What do these scores mean?**\n\n"
+    "Correlation values range from -1 to 1:\n"
+    "- **1**: the factor and happiness usually **rise together**.\n"
+    "- **-1**: as one goes up, the other tends to **fall**.\n"
+    "- **0**: there is **little clear relationship** in this data."
+)
 
 # Scatter plot — full width
 # Scatter plot — full width
