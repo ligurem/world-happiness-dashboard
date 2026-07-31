@@ -819,9 +819,9 @@ else:
 
     changes_title = "Countries with the Largest Happiness Changes"
     if subregion:
-        changes_title = f"{changes_title} in {subregion}"
+        changes_title = f"Largest Changes in {subregion}"
     elif geographic_group:
-        changes_title = f"{changes_title} in {geographic_group}"
+        changes_title = f"Largest Changes in {geographic_group}"
 
     with top_left:
         st.subheader("Largest Happiness Changes")
