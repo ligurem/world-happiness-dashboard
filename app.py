@@ -1107,10 +1107,11 @@ corr_heatmap = (
     )
 )
 
-with st.expander("What do these scores mean?"):
+show_scores_meaning = st.toggle("What do these scores mean?", value=False)
+if show_scores_meaning:
     st.info(
-        "- **🟢 1**: the factor and happiness usually **rise together**.\n"
-        "- **🔴 -1**: as one goes up, the other tends to **fall**.\n"
+        "- **1**: the factor and happiness usually **rise together**.\n"
+        "- **-1**: as one goes up, the other tends to **fall**.\n"
         "- **0**: there is **little clear relationship** in this data."
     )
 
