@@ -1163,10 +1163,6 @@ else:
                     range=[COLOR_PALETTE.get(geographic_group, "#999999")] if geographic_group else group_range
                 )
             ),
-            shape=alt.Shape(
-                "Region_Standardized:N",
-                title="Subregion"
-            ),
             tooltip=[
                 alt.Tooltip("Country_Key:N", title="Country"),
                 alt.Tooltip("Year:O", title="Year"),
