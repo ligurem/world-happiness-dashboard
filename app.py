@@ -817,6 +817,12 @@ else:
     if "selected_country" not in st.session_state:
         st.session_state.selected_country = None
 
+    changes_title = "Countries with the Largest Happiness Changes"
+    if subregion:
+        changes_title = f"{changes_title} in {subregion}"
+    elif geographic_group:
+        changes_title = f"{changes_title} in {geographic_group}"
+
     with top_left:
         st.subheader("Largest Happiness Changes")
         st.caption("Click a bar to select a country. Double-click empty space to clear the selection.")
@@ -860,7 +866,7 @@ else:
                 opacity=alt.condition(country_select, alt.value(1.0), alt.value(0.35))
             )
             .add_params(country_select)
-            .properties(height=600, title="Countries with the Largest Happiness Changes")
+            .properties(height=600, title=changes_title)
         )
 
         selection_state = st.altair_chart(
