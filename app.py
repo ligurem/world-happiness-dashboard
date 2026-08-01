@@ -585,9 +585,7 @@ else:
         )
 
         if isinstance(map_selection_state, dict):
-            selected_payload = map_selection_state.get("selection", {}).get("map_country_select")
-            if selected_payload is None and "map_country_select" in map_selection_state:
-                selected_payload = map_selection_state.get("map_country_select")
+            selected_payload = map_selection_state.get("map_country_select")
             selected_country_candidate = extract_selected_country(selected_payload)
             selected_country_candidate = resolve_country_key(selected_country_candidate)
             desired_selection = [selected_country_candidate] if selected_country_candidate else []
