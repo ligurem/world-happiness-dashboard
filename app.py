@@ -234,6 +234,38 @@ def resolve_country_key(selected_country_value):
     return selected_country_value
 
 
+def extract_brushed_years(selection_payload):
+    if selection_payload is None:
+        return []
+
+    if hasattr(selection_payload, "selection"):
+        return extract_brushed_years(getattr(selection_payload, "selection"))
+
+    if isinstance(selection_payload, (int, float)):
+        return [int(round(selection_payload))]
+
+    if isinstance(selection_payload, str):
+        try:
+            return [int(round(float(selection_payload)))]
+        except ValueError:
+            return []
+
+    if isinstance(selection_payload, dict):
+        selected_values = []
+        for key in ("year_brush", "brush", "selection", "x", "Year", "year"):
+            if key in selection_payload:
+                selected_values.extend(extract_brushed_years(selection_payload.get(key)))
+        return list(dict.fromkeys(value for value in selected_values if value is not None))
+
+    if isinstance(selection_payload, (list, tuple, set)):
+        selected_values = []
+        for item in selection_payload:
+            selected_values.extend(extract_brushed_years(item))
+        return list(dict.fromkeys(value for value in selected_values if value is not None))
+
+    return []
+
+
 years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
 group_domain = sorted(df["Geographic_Group"].dropna().unique())
@@ -678,10 +710,11 @@ else:
 # -----------------------------
 # Section 2: Happiness trends
 # -----------------------------
-st.header("2. How has happiness changed around the world?")
+st.header("2. How has happiness changed over time?")
 
 st.markdown(
     "Use the **World Explorer** to compare happiness trends with the global average from 2015 to 2024."
+    " Brush across the trajectories chart to set the comparison window for the chart below."
 )
 
 trend_data = df[df["Year"].between(TREND_START_YEAR, TREND_END_YEAR)].copy()
@@ -862,8 +895,11 @@ if selected_countries:
         trend_layers.append(country_line_chart)
 
 # ── Render ───────────────────────────────────────────────────────
+year_brush = alt.selection_interval(encodings=["x"], name="year_brush", clear="dblclick")
+
 overview_chart = (
     alt.layer(*trend_layers)
+    .add_params(year_brush)
     .properties(height=420, title="Happiness Trajectories")
     .resolve_scale(color="independent")
     .configure_legend(
@@ -874,113 +910,115 @@ overview_chart = (
     )
 )
 
-st.altair_chart(overview_chart, use_container_width=True)
+overview_selection_state = st.altair_chart(
+    overview_chart,
+    use_container_width=True,
+    key="trajectories_chart",
+    on_select="rerun",
+    selection_mode=["year_brush"]
+)
+
+brushed_years = extract_brushed_years(overview_selection_state)
+if len(brushed_years) >= 2:
+    start_year = min(brushed_years)
+    end_year = max(brushed_years)
+else:
+    start_year = TREND_START_YEAR
+    end_year = TREND_END_YEAR
 
 # -----------------------------
 # Section 2: Happiness shifts
 # -----------------------------
-st.subheader("Where has happiness improved or declined the most?")
+st.markdown("#### Where has happiness improved or declined the most?")
 
 st.markdown(
-    "Use the year range to compare how countries changed between two points in time. "
-    "The bar chart shows the biggest gains and losses, and the **World Explorer** can narrow the view to a region or subregion."
+    "Brush the **Happiness Trajectories** chart above to choose the years for this comparison. "
+    f"Currently comparing **{start_year}** to **{end_year}**."
 )
 
-year_range = st.slider(
-    "Year range",
-    min_value=TREND_START_YEAR,
-    max_value=TREND_END_YEAR,
-    value=(TREND_START_YEAR, TREND_END_YEAR),
-    step=1
+filtered = df.copy()
+if geographic_group:
+    filtered = filtered[filtered["Geographic_Group"] == geographic_group]
+if subregion:
+    filtered = filtered[filtered["Region_Standardized"] == subregion]
+
+start_data = filtered[filtered["Year"] == start_year][
+    ["Country_Key", "Geographic_Group", "Region_Standardized", "Happiness score"]
+].rename(columns={"Happiness score": "Happiness_Start"})
+
+end_data = filtered[filtered["Year"] == end_year][
+    ["Country_Key", "Geographic_Group", "Region_Standardized", "Happiness score"]
+].rename(columns={"Happiness score": "Happiness_End"})
+
+change_data = start_data.merge(
+    end_data,
+    on=["Country_Key", "Geographic_Group", "Region_Standardized"],
+    how="inner"
 )
-start_year, end_year = year_range
+if change_data.empty:
+    st.error("No matching countries found for this selection.")
+    st.stop()
 
-if start_year >= end_year:
-    st.warning(f"Select a different end year to compare with {start_year}.")
+change_data["Happiness Change"] = (
+    change_data["Happiness_End"] - change_data["Happiness_Start"]
+)
+change_data["Change Direction"] = change_data["Happiness Change"].apply(
+    lambda value: "Increase" if value >= 0 else "Decrease"
+)
 
-else:
-    filtered = df.copy()
-    if geographic_group:
-        filtered = filtered[filtered["Geographic_Group"] == geographic_group]
-    if subregion:
-        filtered = filtered[filtered["Region_Standardized"] == subregion]
-    start_data = filtered[filtered["Year"] == start_year][
-        ["Country_Key", "Geographic_Group", "Region_Standardized", "Happiness score"]
-    ].rename(columns={"Happiness score": "Happiness_Start"})
+st.subheader(f"Changes from {start_year} to {end_year}")
 
-    end_data = filtered[filtered["Year"] == end_year][
-        ["Country_Key", "Geographic_Group", "Region_Standardized", "Happiness score"]
-    ].rename(columns={"Happiness score": "Happiness_End"})
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("Countries compared", len(change_data))
+with col2:
+    st.metric("Average happiness change", round(change_data["Happiness Change"].mean(), 2))
+with col3:
+    best_country = change_data.loc[change_data["Happiness Change"].idxmax(), "Country_Key"]
+    best_change = change_data["Happiness Change"].max()
+    st.metric("Largest increase", best_country, round(best_change, 2))
 
-    change_data = start_data.merge(
-        end_data,
-        on=["Country_Key", "Geographic_Group", "Region_Standardized"],
-        how="inner"
+changes_title = "Countries with the Largest Happiness Changes"
+if subregion:
+    changes_title = f"Largest Changes in {subregion}"
+elif geographic_group:
+    changes_title = f"Largest Changes in {geographic_group}"
+
+st.caption("The bars are ordered by the change between the brushed start and end years.")
+
+if "n_countries" not in st.session_state:
+    st.session_state.n_countries = 20
+
+biggest_drops = change_data.nsmallest(st.session_state.n_countries, "Happiness Change")
+biggest_gains = change_data.nlargest(st.session_state.n_countries, "Happiness Change")
+bar_data = pd.concat([biggest_drops, biggest_gains]).sort_values("Happiness Change")
+
+bar_chart = (
+    alt.Chart(bar_data)
+    .mark_bar()
+    .encode(
+        x=alt.X("Happiness Change:Q", title="Happiness change"),
+        y=alt.Y(
+            "Country_Key:N", title="",
+            sort=alt.EncodingSortField(field="Happiness Change", op="sum", order="ascending")
+        ),
+        color=alt.Color(
+            "Change Direction:N",
+            scale=alt.Scale(domain=["Increase", "Decrease"], range=["#2E8B57", "#C0392B"])
+        ),
+        tooltip=[
+            alt.Tooltip("Country_Key:N", title="Country"),
+            alt.Tooltip("Geographic_Group:N", title="World Region"),
+            alt.Tooltip("Region_Standardized:N", title="Subregion"),
+            alt.Tooltip("Happiness_Start:Q", title=f"Happiness {start_year}", format=".2f"),
+            alt.Tooltip("Happiness_End:Q", title=f"Happiness {end_year}", format=".2f"),
+            alt.Tooltip("Happiness Change:Q", title="Happiness Change", format=".2f")
+        ]
     )
-    if change_data.empty:
-        st.error("No matching countries found for this selection.")
-        st.stop()
+    .properties(height=600, title=changes_title)
+)
 
-    change_data["Happiness Change"] = (
-        change_data["Happiness_End"] - change_data["Happiness_Start"]
-    )
-    change_data["Change Direction"] = change_data["Happiness Change"].apply(
-        lambda value: "Increase" if value >= 0 else "Decrease"
-    )
-
-    st.subheader(f"Changes from {start_year} to {end_year}")
-
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Countries compared", len(change_data))
-    with col2:
-        st.metric("Average happiness change", round(change_data["Happiness Change"].mean(), 2))
-    with col3:
-        best_country = change_data.loc[change_data["Happiness Change"].idxmax(), "Country_Key"]
-        best_change = change_data["Happiness Change"].max()
-        st.metric("Largest increase", best_country, round(best_change, 2))
-
-    changes_title = "Countries with the Largest Happiness Changes"
-    if subregion:
-        changes_title = f"Largest Changes in {subregion}"
-    elif geographic_group:
-        changes_title = f"Largest Changes in {geographic_group}"
-
-    st.caption("The bars are ordered by change from the selected start year to the selected end year.")
-
-    if "n_countries" not in st.session_state:
-        st.session_state.n_countries = 20
-
-    biggest_drops = change_data.nsmallest(st.session_state.n_countries, "Happiness Change")
-    biggest_gains = change_data.nlargest(st.session_state.n_countries, "Happiness Change")
-    bar_data = pd.concat([biggest_drops, biggest_gains]).sort_values("Happiness Change")
-
-    bar_chart = (
-        alt.Chart(bar_data)
-        .mark_bar()
-        .encode(
-            x=alt.X("Happiness Change:Q", title="Happiness change"),
-            y=alt.Y(
-                "Country_Key:N", title="",
-                sort=alt.EncodingSortField(field="Happiness Change", op="sum", order="ascending")
-            ),
-            color=alt.Color(
-                "Change Direction:N",
-                scale=alt.Scale(domain=["Increase", "Decrease"], range=["#2E8B57", "#C0392B"])
-            ),
-            tooltip=[
-                alt.Tooltip("Country_Key:N", title="Country"),
-                alt.Tooltip("Geographic_Group:N", title="World Region"),
-                alt.Tooltip("Region_Standardized:N", title="Subregion"),
-                alt.Tooltip("Happiness_Start:Q", title=f"Happiness {start_year}", format=".2f"),
-                alt.Tooltip("Happiness_End:Q", title=f"Happiness {end_year}", format=".2f"),
-                alt.Tooltip("Happiness Change:Q", title="Happiness Change", format=".2f")
-            ]
-        )
-        .properties(height=600, title=changes_title)
-    )
-
-    st.altair_chart(bar_chart, use_container_width=True)
+st.altair_chart(bar_chart, use_container_width=True)
 
 
 # -----------------------------
