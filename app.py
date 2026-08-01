@@ -714,7 +714,6 @@ st.header("2. How has happiness changed over time?")
 
 st.markdown(
     "Use the **World Explorer** to compare happiness trends with the global average from 2015 to 2024."
-    " Brush across the trajectories chart to set the comparison window for the chart below."
 )
 
 trend_data = df[df["Year"].between(TREND_START_YEAR, TREND_END_YEAR)].copy()
@@ -931,10 +930,7 @@ else:
 # -----------------------------
 st.markdown("#### Where has happiness improved or declined the most?")
 
-st.markdown(
-    "Brush the **Happiness Trajectories** chart above to choose the years for this comparison. "
-    f"Currently comparing **{start_year}** to **{end_year}**."
-)
+st.info("**💡 Try a different time period.** Drag across the **Happiness Trajectories** chart above to compare another year range.")
 
 filtered = df.copy()
 if geographic_group:
@@ -966,7 +962,7 @@ change_data["Change Direction"] = change_data["Happiness Change"].apply(
     lambda value: "Increase" if value >= 0 else "Decrease"
 )
 
-st.subheader(f"Changes from {start_year} to {end_year}")
+st.markdown(f"##### Changes from {start_year} to {end_year}")
 
 col1, col2, col3 = st.columns(3)
 with col1:
