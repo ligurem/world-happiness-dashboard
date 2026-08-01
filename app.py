@@ -352,13 +352,8 @@ elif map_selection_signature != last_map_selection_signature:
 
         st.session_state["map_last_clicked_country"] = map_selected_country
     else:
-        last_clicked_country = st.session_state.get("map_last_clicked_country")
-        if last_clicked_country and last_clicked_country in current_selected_countries:
-            current_selected_countries = [
-                country_key
-                for country_key in current_selected_countries
-                if country_key != last_clicked_country
-            ]
+        current_selected_countries = []
+        st.session_state["map_last_clicked_country"] = None
 
     st.session_state["selected_countries_manual"] = list(dict.fromkeys(current_selected_countries))
     st.session_state["map_last_selection_signature"] = map_selection_signature
