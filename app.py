@@ -303,26 +303,6 @@ geographic_group = st.sidebar.selectbox(
     index=None,
     placeholder="All world regions"
 )
-if geographic_group:
-    geographic_group_color = COLOR_PALETTE.get(geographic_group, "#7B2D8B")
-    st.sidebar.markdown(
-        f"""
-        <div style="
-            margin: -0.15rem 0 0.35rem 0;
-            padding: 0.45rem 0.7rem;
-            border-radius: 0.65rem;
-            border: 1px solid {geographic_group_color};
-            background: {geographic_group_color}18;
-            color: {geographic_group_color};
-            font-size: 0.84rem;
-            font-weight: 700;
-            line-height: 1.2;
-        ">
-            Active World Region: {geographic_group}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 st.sidebar.markdown("<div style='height: 0.45rem;'></div>", unsafe_allow_html=True)
 subregion_options = sorted(df["Region_Standardized"].dropna().unique().tolist())
 if geographic_group:
@@ -338,26 +318,6 @@ subregion = st.sidebar.selectbox(
     index=None,
     placeholder="All subregions"
 )
-if subregion:
-    subregion_color = geographic_group_color if geographic_group else "#4E79A7"
-    st.sidebar.markdown(
-        f"""
-        <div style="
-            margin: -0.15rem 0 0.35rem 0;
-            padding: 0.45rem 0.7rem;
-            border-radius: 0.65rem;
-            border: 1px solid {subregion_color};
-            background: {subregion_color}18;
-            color: {subregion_color};
-            font-size: 0.84rem;
-            font-weight: 700;
-            line-height: 1.2;
-        ">
-            Active Subregion: {subregion}
-        </div>
-        """,
-        unsafe_allow_html=True
-    )
 st.sidebar.markdown("<div style='height: 0.45rem;'></div>", unsafe_allow_html=True)
 current_country_filter_signature = (geographic_group, subregion)
 previous_country_filter_signature = st.session_state.get("country_filter_signature")
