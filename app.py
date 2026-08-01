@@ -762,10 +762,10 @@ st.divider()
 # -----------------------------
 # Section 3: Happiness shifts (Melissa's version)
 # -----------------------------
-st.header("3. Where Happiness Changed Most")
+st.header("3. Where has happiness improved or declined the most?")
 
 st.markdown(
-    "Compare countries between two selected years. "
+    "Compare happiness changes across countries by adjusting the year range. Use the **World Explorer** to explore specific regions or countries. "
     "The bar chart highlights the largest gains and losses."
 )
 
