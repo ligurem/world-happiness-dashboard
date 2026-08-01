@@ -1228,7 +1228,7 @@ def build_correlation_heatmap(correlation_frame, title_text):
         )
     )
 
-global_correlation_title = "Global factors most associated with happiness"
+global_correlation_title = "How do happiness predictors correlate globally?"
 global_corr_heatmap = build_correlation_heatmap(global_correlation_data, global_correlation_title)
 
 heatmap_column, explainer_column = st.columns([4, 2])
@@ -1241,11 +1241,11 @@ with heatmap_column:
         if regional_correlation_data.empty:
             st.info("No region-specific correlation data is available for the current selection.")
         else:
-            regional_title = "Region-specific factors most associated with happiness"
+            regional_title = "How do happiness predictors correlate in [selection]?"
             if subregion:
-                regional_title = f"{regional_title} in {subregion}"
+                regional_title = f"How do happiness predictors correlate in {subregion}?"
             elif geographic_group:
-                regional_title = f"{regional_title} in {geographic_group}"
+                regional_title = f"How do happiness predictors correlate in {geographic_group}?"
 
             regional_corr_heatmap = build_correlation_heatmap(regional_correlation_data, regional_title)
             st.altair_chart(regional_corr_heatmap, use_container_width=True)
