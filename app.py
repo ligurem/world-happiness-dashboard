@@ -394,7 +394,7 @@ selected_country_codes = set(
 st.header("1. Which countries are happiest?")
 
 st.markdown(
-    "Use the **World Explorer** in the sidebar to see how the most recent happiness scores vary across regions and countries."
+    "Hover over the map to explore each country's most recent happiness score, or use the **World Explorer** in the sidebar to narrow your view."
 )
 
 map_data = df.copy()
