@@ -276,7 +276,7 @@ selected_country_codes = set(
 st.header("1. Which countries are happiest?")
 
 st.markdown(
-    "Use the **World Explorer** in the sidebar to explore happiness scores across different regions and countries."
+    "Use the **World Explorer** in the sidebar to see how happiness scores vary across different regions and countries."
 )
 
 map_data = df[df["Year"].between(start_year, end_year)].copy()
