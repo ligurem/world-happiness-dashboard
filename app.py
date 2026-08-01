@@ -1249,9 +1249,12 @@ with heatmap_column:
 
             regional_corr_heatmap = build_correlation_heatmap(regional_correlation_data, regional_title)
             st.altair_chart(regional_corr_heatmap, use_container_width=True)
+            st.info(
+                "**💡 Different regions tell different stories.** Try changing the **World Explorer** to see which predictor rises to the top."
+            )
     else:
         st.info(
-            "**Predictors aren't equally important everywhere.** Use the **World Explorer** to compare regions."
+            "**💡 Predictors aren't equally important everywhere.** Use the **World Explorer** to compare regions."
         )
 
 with explainer_column:
