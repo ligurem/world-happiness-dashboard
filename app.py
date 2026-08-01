@@ -993,7 +993,7 @@ with col3:
     best_change = change_data["Happiness Change"].max()
     st.metric("Largest increase", best_country, round(best_change, 2))
 
-# changes_title = "Countries with the Largest Happiness Changes"
+    changes_title = "Countries with the Largest Happiness Changes"
 if subregion:
     changes_title = f"Largest Changes in {subregion}"
 elif geographic_group:
