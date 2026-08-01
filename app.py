@@ -212,6 +212,7 @@ st.markdown(
 # Sidebar controls
 # -----------------------------
 st.sidebar.header("World Explorer")
+st.sidebar.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
 geographic_group = st.sidebar.selectbox(
     "World Region",
     geographic_groups,
