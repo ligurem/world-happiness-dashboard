@@ -266,6 +266,12 @@ if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
 
+map_selected_country = st.session_state.get("map_selected_country")
+map_selected_country_applied = st.session_state.get("map_selected_country_applied")
+if map_selected_country and map_selected_country_applied != map_selected_country:
+    st.session_state["selected_countries"] = [map_selected_country]
+    st.session_state["map_selected_country_applied"] = map_selected_country
+
 country_pool = df.copy()
 if geographic_group:
     country_pool = country_pool[country_pool["Geographic_Group"] == geographic_group]
@@ -585,8 +591,10 @@ else:
             selected_country_candidate = extract_selected_country(selected_payload)
             selected_country_candidate = resolve_country_key(selected_country_candidate)
             desired_selection = [selected_country_candidate] if selected_country_candidate else []
-            if st.session_state.get("selected_countries", []) != desired_selection:
-                st.session_state["selected_countries"] = desired_selection
+            current_selection = st.session_state.get("selected_countries", []) or []
+            if desired_selection and current_selection != desired_selection:
+                st.session_state["map_selected_country"] = desired_selection[0]
+                st.session_state["map_selected_country_applied"] = desired_selection[0]
                 st.rerun()
 
     with explainer_column:
