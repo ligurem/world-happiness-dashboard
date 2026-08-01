@@ -219,7 +219,7 @@ geographic_group = st.sidebar.selectbox(
     index=None,
     placeholder="All world regions"
 )
-st.sidebar.markdown("<div style='height: .75rem;'></div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div style='height: .55rem;'></div>", unsafe_allow_html=True)
 subregion_options = sorted(df["Region_Standardized"].dropna().unique().tolist())
 if geographic_group:
     subregion_options = sorted(
