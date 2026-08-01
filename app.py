@@ -306,29 +306,18 @@ if ignore_next_selection:
     st.session_state["map_last_selection_signature"] = map_selection_signature
     st.session_state["map_ignore_next_selection"] = False
 elif map_selection_signature != last_map_selection_signature:
-    map_selected_country = resolve_country_key(extract_selected_country(map_selection_result))
+    map_selected_countries_from_click = [
+        resolve_country_key(country_name)
+        for country_name in extract_selected_countries(map_selection_result)
+    ]
+    map_selected_countries_from_click = [
+        country_key
+        for country_key in dict.fromkeys(map_selected_countries_from_click)
+        if country_key
+    ]
 
-    if map_selected_country:
-        if map_selected_country in current_selected_countries:
-            current_selected_countries = [
-                country_key
-                for country_key in current_selected_countries
-                if country_key != map_selected_country
-            ]
-        else:
-            current_selected_countries.append(map_selected_country)
-
-        st.session_state["map_last_clicked_country"] = map_selected_country
-    else:
-        last_clicked_country = st.session_state.get("map_last_clicked_country")
-        if last_clicked_country and last_clicked_country in current_selected_countries:
-            current_selected_countries = [
-                country_key
-                for country_key in current_selected_countries
-                if country_key != last_clicked_country
-            ]
-
-    st.session_state["selected_countries_manual"] = list(dict.fromkeys(current_selected_countries))
+    st.session_state["selected_countries_manual"] = list(dict.fromkeys(map_selected_countries_from_click))
+    st.session_state["map_last_clicked_country"] = map_selected_countries_from_click[-1] if map_selected_countries_from_click else None
     st.session_state["map_last_selection_signature"] = map_selection_signature
 
 map_selected_countries = st.session_state["selected_countries_manual"]
