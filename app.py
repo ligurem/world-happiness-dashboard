@@ -364,6 +364,14 @@ else:
         }
         clip_map = False
 
+    map_country_select = alt.selection_point(
+        name="map_country_select",
+        fields=["Country"],
+        on="click",
+        clear="dblclick",
+        toggle=False
+    )
+
     map_base_chart = (
         alt.Chart(world)
         .mark_geoshape(
@@ -495,7 +503,7 @@ else:
     else:
         map_chart = map_base_chart
 
-    map_chart = map_chart.configure_view(strokeWidth=0)
+    map_chart = map_chart.add_params(map_country_select).configure_view(strokeWidth=0)
 
     map_column, explainer_column = st.columns([5, 2])
 
@@ -537,10 +545,22 @@ else:
             unsafe_allow_html=True
         )
 
-        st.altair_chart(
+        map_selection_state = st.altair_chart(
             map_chart,
             use_container_width=True
+            on_select="rerun",
+            selection_mode=["map_country_select"]
         )
+
+        if isinstance(map_selection_state, dict):
+            selected_payload = map_selection_state.get("selection", {}).get("map_country_select")
+            if selected_payload is None and "map_country_select" in map_selection_state:
+                selected_payload = map_selection_state.get("map_country_select")
+            selected_country_candidate = extract_selected_country(selected_payload)
+            desired_selection = [selected_country_candidate] if selected_country_candidate else []
+            if st.session_state.get("selected_countries", []) != desired_selection:
+                st.session_state["selected_countries"] = desired_selection
+                st.rerun()
 
     with explainer_column:
         st.info(
