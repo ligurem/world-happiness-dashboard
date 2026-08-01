@@ -188,6 +188,29 @@ def extract_selected_country(selection_payload):
     return None
 
 
+def extract_selected_countries(selection_payload):
+    if selection_payload is None:
+        return []
+
+    if isinstance(selection_payload, str):
+        return [selection_payload] if selection_payload else []
+
+    selected_values = []
+
+    if isinstance(selection_payload, dict):
+        for key in ("Country_Key", "Country", "points", "selection", "country_select", "map_country_select"):
+            if key in selection_payload:
+                selected_values.extend(extract_selected_countries(selection_payload.get(key)))
+        return list(dict.fromkeys(value for value in selected_values if value))
+
+    if isinstance(selection_payload, list):
+        for item in selection_payload:
+            selected_values.extend(extract_selected_countries(item))
+        return list(dict.fromkeys(value for value in selected_values if value))
+
+    return []
+
+
 def resolve_country_key(selected_country_value):
     if not selected_country_value:
         return None
@@ -206,32 +229,6 @@ def resolve_country_key(selected_country_value):
 
     return selected_country_value
 
-
-def get_map_selected_country(selection_state):
-    if selection_state is None:
-        return None
-
-    selected_payload = None
-
-    try:
-        selected_payload = selection_state["map_country_select"]
-    except Exception:
-        selected_payload = None
-
-    if selected_payload is None:
-        try:
-            selected_payload = selection_state["selection"]["map_country_select"]
-        except Exception:
-            selected_payload = None
-
-    if selected_payload is None:
-        try:
-            selected_payload = getattr(selection_state, "map_country_select")
-        except Exception:
-            selected_payload = None
-
-    selected_country_value = extract_selected_country(selected_payload)
-    return resolve_country_key(selected_country_value)
 
 years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
@@ -293,17 +290,20 @@ if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
 
-map_selected_country = st.session_state.get("map_selected_country")
-map_selected_country_applied = st.session_state.get("map_selected_country_applied")
+map_selected_countries_applied = st.session_state.get("map_selected_countries_applied", []) or []
 map_chart_state = st.session_state.get("map_chart")
-map_chart_selected_country = get_map_selected_country(map_chart_state)
-if map_chart_selected_country and map_selected_country_applied != map_chart_selected_country:
-    st.session_state["selected_countries"] = [map_chart_selected_country]
-    st.session_state["map_selected_country"] = map_chart_selected_country
-    st.session_state["map_selected_country_applied"] = map_chart_selected_country
-if map_selected_country and map_selected_country_applied != map_selected_country:
-    st.session_state["selected_countries"] = [map_selected_country]
-    st.session_state["map_selected_country_applied"] = map_selected_country
+map_chart_selected_countries = [
+    resolve_country_key(country_name)
+    for country_name in extract_selected_countries(map_chart_state)
+]
+map_chart_selected_countries = [
+    country_key
+    for country_key in dict.fromkeys(map_chart_selected_countries)
+    if country_key
+]
+if map_chart_selected_countries != map_selected_countries_applied:
+    st.session_state["selected_countries"] = map_chart_selected_countries
+    st.session_state["map_selected_countries_applied"] = map_chart_selected_countries
 
 country_pool = df.copy()
 if geographic_group:
@@ -433,7 +433,7 @@ else:
         fields=["Country"],
         on="click",
         clear="dblclick",
-        toggle=False
+        toggle=True
     )
 
     map_base_chart = (
@@ -609,7 +609,7 @@ else:
             unsafe_allow_html=True
         )
 
-        map_selection_state = st.altair_chart(
+        st.altair_chart(
             map_chart,
             key="map_chart",
             use_container_width=True
