@@ -1,4 +1,5 @@
 import json
+import html
 from pathlib import Path
 from importlib import resources
 import streamlit as st
@@ -232,6 +233,10 @@ def resolve_country_key(selected_country_value):
         return matching_country_keys[0]
 
     return selected_country_value
+
+
+def highlight_dynamic_text(value):
+    return f'<span style="color: #7B2D8B; font-weight: 700;">{html.escape(str(value))}</span>'
 
 
 def extract_brushed_years(selection_payload):
@@ -967,13 +972,16 @@ change_data["Change Direction"] = change_data["Happiness Change"].apply(
     lambda value: "Increase" if value >= 0 else "Decrease"
 )
 
-changes_heading = f"Changes from {start_year} to {end_year}"
-if subregion:
-    changes_heading = f"{changes_heading} in {subregion}"
-elif geographic_group:
-    changes_heading = f"{changes_heading} in {geographic_group}"
+changes_heading = f"Changes from {highlight_dynamic_text(start_year)} to {highlight_dynamic_text(end_year)}"
 
-st.markdown(f"##### {changes_heading}")
+st.info("**💡 Try a different time period.** Drag across the **Happiness Trajectories** chart above to compare another year range.")
+
+if subregion:
+    changes_heading = f"{changes_heading} in {highlight_dynamic_text(subregion)}"
+elif geographic_group:
+    changes_heading = f"{changes_heading} in {highlight_dynamic_text(geographic_group)}"
+
+st.markdown(f"##### {changes_heading}", unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -984,8 +992,6 @@ with col3:
     best_country = change_data.loc[change_data["Happiness Change"].idxmax(), "Country_Key"]
     best_change = change_data["Happiness Change"].max()
     st.metric("Largest increase", best_country, round(best_change, 2))
-
-st.info("**💡 Try a different time period.** Drag across the **Happiness Trajectories** chart above to compare another year range.")
 
 changes_title = "Countries with the Largest Happiness Changes"
 if subregion:
@@ -1120,18 +1126,22 @@ def build_correlation_heatmap(correlation_frame, title_text):
         )
     )
 
-    return (
+    heatmap_chart = (
         alt.layer(heatmap_row, heatmap_text)
         .properties(
             width="container",
             height=200,
-            title=title_text
         )
         .configure_axisX(
             labelAngle=45,
             labelFontSize=12
         )
     )
+
+    if title_text:
+        heatmap_chart = heatmap_chart.properties(title=title_text)
+
+    return heatmap_chart
 
 global_correlation_title = "How do happiness predictors correlate globally?"
 global_corr_heatmap = build_correlation_heatmap(global_correlation_data, global_correlation_title)
@@ -1146,13 +1156,13 @@ with heatmap_column:
         if regional_correlation_data.empty:
             st.info("No region-specific correlation data is available for the current selection.")
         else:
-            regional_title = "How do happiness predictors correlate in [selection]?"
-            if subregion:
-                regional_title = f"How do happiness predictors correlate in {subregion}?"
-            elif geographic_group:
-                regional_title = f"How do happiness predictors correlate in {geographic_group}?"
+            regional_selection = subregion if subregion else geographic_group
+            st.markdown(
+                f"##### How do happiness predictors correlate in {highlight_dynamic_text(regional_selection)}?",
+                unsafe_allow_html=True
+            )
 
-            regional_corr_heatmap = build_correlation_heatmap(regional_correlation_data, regional_title)
+            regional_corr_heatmap = build_correlation_heatmap(regional_correlation_data, None)
             st.altair_chart(regional_corr_heatmap, use_container_width=True)
             st.info(
                 "**💡 Different regions tell different stories.** Try changing the **World Explorer** to see which predictors rise to the top."
@@ -1260,16 +1270,17 @@ else:
     else:
         relationship_scatter = relationship_points
 
-    scatter_title = f"{y_variable} vs. {x_variable}"
-    if subregion:
-        scatter_title = f"{scatter_title} in {subregion}"
-    elif geographic_group:
-        scatter_title = f"{scatter_title} in {geographic_group}"
+    scatter_heading = f"{y_variable} vs. {x_variable}"
+    if subregion or geographic_group:
+        selected_region = subregion if subregion else geographic_group
+        scatter_heading = f"{scatter_heading} in {highlight_dynamic_text(selected_region)}"
+        st.markdown(f"##### {scatter_heading}", unsafe_allow_html=True)
+    else:
+        st.markdown(f"##### {scatter_heading}")
 
     relationship_scatter = relationship_scatter.properties(
         width="container",
         height=500,
-        title=scatter_title
     )
 
     st.altair_chart(relationship_scatter, use_container_width=True)
