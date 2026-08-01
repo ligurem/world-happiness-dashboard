@@ -972,9 +972,7 @@ change_data["Change Direction"] = change_data["Happiness Change"].apply(
     lambda value: "Increase" if value >= 0 else "Decrease"
 )
 
-changes_heading = f"Changes from {highlight_dynamic_text(start_year)} to {highlight_dynamic_text(end_year)}"
-
-st.info("**💡 Try a different time period.** Drag across the **Happiness Trajectories** chart above to compare another year range.")
+changes_heading = f"Largest Changes from {highlight_dynamic_text(start_year)} to {highlight_dynamic_text(end_year)}"
 
 if subregion:
     changes_heading = f"{changes_heading} in {highlight_dynamic_text(subregion)}"
@@ -982,6 +980,8 @@ elif geographic_group:
     changes_heading = f"{changes_heading} in {highlight_dynamic_text(geographic_group)}"
 
 st.markdown(f"##### {changes_heading}", unsafe_allow_html=True)
+
+st.info("**💡 Try a different time period.** Drag across the **Happiness Trajectories** chart above to compare another year range.")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -993,13 +993,13 @@ with col3:
     best_change = change_data["Happiness Change"].max()
     st.metric("Largest increase", best_country, round(best_change, 2))
 
-changes_title = "Countries with the Largest Happiness Changes"
+# changes_title = "Countries with the Largest Happiness Changes"
 if subregion:
     changes_title = f"Largest Changes in {subregion}"
 elif geographic_group:
     changes_title = f"Largest Changes in {geographic_group}"
 
-st.caption("The bars are ordered by the change between the brushed start and end years.")
+st.caption("Each bar shows a country's change in happiness over the selected time range, highlighting the largest gains and declines.")
 
 if "n_countries" not in st.session_state:
     st.session_state.n_countries = 10
