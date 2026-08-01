@@ -160,6 +160,8 @@ def build_trend_tables(start_year, end_year):
 def extract_selected_country(selection_payload):
     if selection_payload is None:
         return None
+    if hasattr(selection_payload, "selection"):
+        return extract_selected_country(getattr(selection_payload, "selection"))
     if isinstance(selection_payload, str):
         return selection_payload or None
     if isinstance(selection_payload, dict):
@@ -173,6 +175,8 @@ def extract_selected_country(selection_payload):
             return extract_selected_country(selection_payload.get("selection"))
         if "country_select" in selection_payload:
             return extract_selected_country(selection_payload.get("country_select"))
+        if "map_country_select" in selection_payload:
+            return extract_selected_country(selection_payload.get("map_country_select"))
     if isinstance(selection_payload, list):
         for item in selection_payload:
             if isinstance(item, dict) and "Country_Key" in item:
@@ -645,7 +649,6 @@ else:
             updated_map_selected = list(dict.fromkeys(updated_map_selected))
             if updated_map_selected != current_map_selected:
                 st.session_state["map_selected_countries"] = updated_map_selected
-                st.rerun()
 
     with explainer_column:
         st.info(
