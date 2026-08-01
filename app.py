@@ -212,14 +212,14 @@ st.markdown(
 # Sidebar controls
 # -----------------------------
 st.sidebar.header("World Explorer")
-st.sidebar.markdown("<div style='height: 1.75rem;'></div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div style='height: 1.25rem;'></div>", unsafe_allow_html=True)
 geographic_group = st.sidebar.selectbox(
     "World Region",
     geographic_groups,
     index=None,
     placeholder="All world regions"
 )
-
+st.sidebar.markdown("<div style='height: .75rem;'></div>", unsafe_allow_html=True)
 subregion_options = sorted(df["Region_Standardized"].dropna().unique().tolist())
 if geographic_group:
     subregion_options = sorted(
@@ -228,14 +228,14 @@ if geographic_group:
         .unique()
         .tolist()
     )
-
+st.sidebar.markdown("<div style='height: .75rem;'></div>", unsafe_allow_html=True)
 subregion = st.sidebar.selectbox(
     "Subregion",
     subregion_options,
     index=None,
     placeholder="All subregions"
 )
-
+st.sidebar.markdown("<div style='height: .75rem;'></div>", unsafe_allow_html=True)
 current_country_filter_signature = (geographic_group, subregion)
 previous_country_filter_signature = st.session_state.get("country_filter_signature")
 if previous_country_filter_signature != current_country_filter_signature:
