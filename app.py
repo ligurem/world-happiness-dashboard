@@ -1133,7 +1133,6 @@ st.header("4. Correlation Explorer")
 
 st.markdown(
     "This section shows how happiness and related factors are correlated. "
-    "Use the dropdowns to choose a relationship, then inspect the scatterplot and trend line."
 )
 
 correlation_year = "All years"
