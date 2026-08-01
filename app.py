@@ -208,12 +208,27 @@ def resolve_country_key(selected_country_value):
 
 
 def get_map_selected_country(selection_state):
-    if not isinstance(selection_state, dict):
+    if selection_state is None:
         return None
 
-    selected_payload = selection_state.get("map_country_select")
+    selected_payload = None
+
+    try:
+        selected_payload = selection_state["map_country_select"]
+    except Exception:
+        selected_payload = None
+
     if selected_payload is None:
-        selected_payload = selection_state.get("selection", {}).get("map_country_select")
+        try:
+            selected_payload = selection_state["selection"]["map_country_select"]
+        except Exception:
+            selected_payload = None
+
+    if selected_payload is None:
+        try:
+            selected_payload = getattr(selection_state, "map_country_select")
+        except Exception:
+            selected_payload = None
 
     selected_country_value = extract_selected_country(selected_payload)
     return resolve_country_key(selected_country_value)
@@ -280,6 +295,12 @@ if previous_country_filter_signature != current_country_filter_signature:
 
 map_selected_country = st.session_state.get("map_selected_country")
 map_selected_country_applied = st.session_state.get("map_selected_country_applied")
+map_chart_state = st.session_state.get("map_chart")
+map_chart_selected_country = get_map_selected_country(map_chart_state)
+if map_chart_selected_country and map_selected_country_applied != map_chart_selected_country:
+    st.session_state["selected_countries"] = [map_chart_selected_country]
+    st.session_state["map_selected_country"] = map_chart_selected_country
+    st.session_state["map_selected_country_applied"] = map_chart_selected_country
 if map_selected_country and map_selected_country_applied != map_selected_country:
     st.session_state["selected_countries"] = [map_selected_country]
     st.session_state["map_selected_country_applied"] = map_selected_country
@@ -596,15 +617,6 @@ else:
             on_select="rerun",
             selection_mode=["map_country_select"]
         )
-
-        selected_country_candidate = get_map_selected_country(map_selection_state)
-        if selected_country_candidate:
-            desired_selection = [selected_country_candidate]
-            current_selection = st.session_state.get("selected_countries", []) or []
-            if current_selection != desired_selection:
-                st.session_state["map_selected_country"] = desired_selection[0]
-                st.session_state["map_selected_country_applied"] = desired_selection[0]
-                st.rerun()
 
     with explainer_column:
         st.info(
