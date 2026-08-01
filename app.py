@@ -1251,7 +1251,7 @@ with heatmap_column:
             st.altair_chart(regional_corr_heatmap, use_container_width=True)
     else:
         st.info(
-            "Use the **World Explorer** above to select a world region or subregion, then compare how the correlation patterns change."
+            "**Tip:** Use the **World Explorer** to discover which predictors matter most in different regions."
         )
 
 with explainer_column:
