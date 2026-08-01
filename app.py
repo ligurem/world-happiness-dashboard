@@ -1251,7 +1251,7 @@ with heatmap_column:
             st.altair_chart(regional_corr_heatmap, use_container_width=True)
     else:
         st.info(
-            "**Tip:** Use the **World Explorer** to discover which predictors matter most in different regions."
+            "**Predictors aren't equally important everywhere.** Use the **World Explorer** to compare regions."
         )
 
 with explainer_column:
