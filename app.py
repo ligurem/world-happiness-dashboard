@@ -286,7 +286,9 @@ st.sidebar.markdown("<div style='height: 0.45rem;'></div>", unsafe_allow_html=Tr
 current_country_filter_signature = (geographic_group, subregion)
 previous_country_filter_signature = st.session_state.get("country_filter_signature")
 if previous_country_filter_signature != current_country_filter_signature:
-    st.session_state["selected_countries"] = []
+    st.session_state["selected_countries_manual"] = []
+    st.session_state["map_selected_countries"] = []
+    st.session_state["map_selected_countries_applied"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
 
 map_selected_countries_applied = st.session_state.get("map_selected_countries_applied", []) or []
@@ -301,12 +303,7 @@ map_chart_selected_countries = [
     if country_key
 ]
 if map_chart_selected_countries != map_selected_countries_applied:
-    current_selected_countries = st.session_state.get("selected_countries", []) or []
-    merged_selected_countries = list(
-        dict.fromkeys(current_selected_countries + map_chart_selected_countries)
-    )
-    if merged_selected_countries != current_selected_countries:
-        st.session_state["selected_countries"] = merged_selected_countries
+    st.session_state["map_selected_countries"] = map_chart_selected_countries
     st.session_state["map_selected_countries_applied"] = map_chart_selected_countries
 
 country_pool = df.copy()
@@ -316,14 +313,20 @@ if subregion:
     country_pool = country_pool[country_pool["Region_Standardized"] == subregion]
 
 country_options = sorted(country_pool["Country_Key"].dropna().unique().tolist())
-selected_countries = st.sidebar.multiselect(
+selected_countries_manual = st.sidebar.multiselect(
     "Country",
     options=country_options,
-    key="selected_countries",
+    key="selected_countries_manual",
     placeholder="All countries"
 )
 
-selected_countries_for_map = st.session_state.get("selected_countries", []) or []
+selected_countries_for_map = list(
+    dict.fromkeys(
+        (st.session_state.get("selected_countries_manual", []) or [])
+        + (st.session_state.get("map_selected_countries", []) or [])
+    )
+)
+selected_countries = selected_countries_for_map
 selected_country_codes = set(
     df.loc[df["Country_Key"].isin(selected_countries_for_map), "Country_Standardized"]
     .dropna()
@@ -338,7 +341,7 @@ selected_country_codes = set(
 st.header("1. Which countries are happiest?")
 
 st.markdown(
-    "Use the **World Explorer** in the sidebar to see how happiness scores vary across different regions and countries."
+    "Use the **World Explorer** in the sidebar to see how the most recent happiness scores vary across regions and countries."
 )
 
 map_data = df.copy()
