@@ -290,7 +290,6 @@ if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
 
-map_selected_countries_applied = st.session_state.get("map_selected_countries_applied", []) or []
 map_chart_state = st.session_state.get("map_chart")
 map_chart_selected_countries = [
     resolve_country_key(country_name)
@@ -301,9 +300,13 @@ map_chart_selected_countries = [
     for country_key in dict.fromkeys(map_chart_selected_countries)
     if country_key
 ]
-if map_chart_selected_countries != map_selected_countries_applied:
-    st.session_state["selected_countries"] = map_chart_selected_countries
-    st.session_state["map_selected_countries_applied"] = map_chart_selected_countries
+if map_chart_selected_countries:
+    current_selected_countries = st.session_state.get("selected_countries", []) or []
+    merged_selected_countries = list(
+        dict.fromkeys(current_selected_countries + map_chart_selected_countries)
+    )
+    if merged_selected_countries != current_selected_countries:
+        st.session_state["selected_countries"] = merged_selected_countries
 
 country_pool = df.copy()
 if geographic_group:
