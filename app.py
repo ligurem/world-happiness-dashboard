@@ -289,16 +289,14 @@ st.markdown(
     }
 
     [data-testid="stSidebarContent"] {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        min-height: calc(100vh - 2rem);
+        padding-top: clamp(0.5rem, 7vh, 3.5rem);
+        padding-bottom: clamp(1rem, 8vh, 4rem);
     }
 
     @media (max-height: 850px) {
         [data-testid="stSidebarContent"] {
-            justify-content: flex-start;
-            min-height: auto;
+            padding-top: 0.5rem;
+            padding-bottom: 1rem;
         }
     }
     </style>
