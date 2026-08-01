@@ -212,7 +212,7 @@ st.markdown(
 # Sidebar controls
 # -----------------------------
 st.sidebar.header("World Explorer")
-st.sidebar.markdown("<div style='height: 0.75rem;'></div>", unsafe_allow_html=True)
+st.sidebar.markdown("<div style='height: 1.75rem;'></div>", unsafe_allow_html=True)
 geographic_group = st.sidebar.selectbox(
     "World Region",
     geographic_groups,
@@ -559,8 +559,7 @@ else:
 st.header("2. How has happiness changed from 2015 to 2024?")
 
 st.markdown(
-    "Track average happiness from 2015 to 2024. "
-    "Use the World Region and Subregion filters and optionally highlight countries."
+    "Use the **World Explorer** to compare happiness trends with the global average from 2015 to 2024."
 )
 
 trend_data = df[df["Year"].between(TREND_START_YEAR, TREND_END_YEAR)].copy()
