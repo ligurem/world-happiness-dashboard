@@ -247,6 +247,20 @@ if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
 
+country_pool = df.copy()
+if geographic_group:
+    country_pool = country_pool[country_pool["Geographic_Group"] == geographic_group]
+if subregion:
+    country_pool = country_pool[country_pool["Region_Standardized"] == subregion]
+
+country_options = sorted(country_pool["Country_Key"].dropna().unique().tolist())
+selected_countries = st.sidebar.multiselect(
+    "Country",
+    options=country_options,
+    key="selected_countries",
+    placeholder="All countries"
+)
+
 selected_countries_for_map = st.session_state.get("selected_countries", []) or []
 selected_country_codes = set(
     df.loc[df["Country_Key"].isin(selected_countries_for_map), "Country_Standardized"]
@@ -553,20 +567,6 @@ st.header("2. Happiness Trends Over Time")
 st.markdown(
     "Track average happiness over the selected year range. "
     "Use the World Region and Subregion filters and optionally highlight countries."
-)
-
-country_pool = df.copy()
-if geographic_group:
-    country_pool = country_pool[country_pool["Geographic_Group"] == geographic_group]
-if subregion:
-    country_pool = country_pool[country_pool["Region_Standardized"] == subregion]
-
-country_options = sorted(country_pool["Country_Key"].dropna().unique().tolist())
-selected_countries = st.multiselect(
-    "Country",
-    options=country_options,
-    key="selected_countries",
-    placeholder="All countries"
 )
 
 trend_data = df[df["Year"].between(start_year, end_year)].copy()
