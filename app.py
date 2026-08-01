@@ -165,6 +165,8 @@ def extract_selected_country(selection_payload):
     if isinstance(selection_payload, dict):
         if "Country_Key" in selection_payload:
             return extract_selected_country(selection_payload.get("Country_Key"))
+        if "Country" in selection_payload:
+            return extract_selected_country(selection_payload.get("Country"))
         if "points" in selection_payload:
             return extract_selected_country(selection_payload.get("points"))
         if "selection" in selection_payload:
@@ -177,9 +179,32 @@ def extract_selected_country(selection_payload):
                 selected_value = extract_selected_country(item.get("Country_Key"))
                 if selected_value:
                     return selected_value
+            if isinstance(item, dict) and "Country" in item:
+                selected_value = extract_selected_country(item.get("Country"))
+                if selected_value:
+                    return selected_value
             if isinstance(item, str) and item:
                 return item
     return None
+
+
+def resolve_country_key(selected_country_value):
+    if not selected_country_value:
+        return None
+
+    if selected_country_value in set(df["Country_Key"].dropna()):
+        return selected_country_value
+
+    matching_country_keys = (
+        df.loc[df["Country_Standardized"] == selected_country_value, "Country_Key"]
+        .dropna()
+        .drop_duplicates()
+        .tolist()
+    )
+    if matching_country_keys:
+        return matching_country_keys[0]
+
+    return selected_country_value
 
 years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
@@ -558,6 +583,7 @@ else:
             if selected_payload is None and "map_country_select" in map_selection_state:
                 selected_payload = map_selection_state.get("map_country_select")
             selected_country_candidate = extract_selected_country(selected_payload)
+            selected_country_candidate = resolve_country_key(selected_country_candidate)
             desired_selection = [selected_country_candidate] if selected_country_candidate else []
             if st.session_state.get("selected_countries", []) != desired_selection:
                 st.session_state["selected_countries"] = desired_selection
