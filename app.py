@@ -287,6 +287,20 @@ st.markdown(
         background-position: bottom 20px center;
         background-size: 80px;
     }
+
+    [data-testid="stSidebarContent"] {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: calc(100vh - 2rem);
+    }
+
+    @media (max-height: 850px) {
+        [data-testid="stSidebarContent"] {
+            justify-content: flex-start;
+            min-height: auto;
+        }
+    }
     </style>
     """,
     unsafe_allow_html=True
