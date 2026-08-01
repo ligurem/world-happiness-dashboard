@@ -294,6 +294,42 @@ if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["map_selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
 
+map_selection_result = st.session_state.get("map_chart")
+map_selected_countries_from_click = [
+    resolve_country_key(country_name)
+    for country_name in extract_selected_countries(map_selection_result)
+]
+map_selected_countries_from_click = [
+    country_key
+    for country_key in dict.fromkeys(map_selected_countries_from_click)
+    if country_key
+]
+
+current_map_selected_countries = st.session_state.get("map_selected_countries", []) or []
+if map_selected_countries_from_click != current_map_selected_countries:
+    removed_from_map = [
+        country_key
+        for country_key in current_map_selected_countries
+        if country_key not in map_selected_countries_from_click
+    ]
+    added_from_map = [
+        country_key
+        for country_key in map_selected_countries_from_click
+        if country_key not in current_map_selected_countries
+    ]
+
+    updated_manual_countries = [
+        country_key
+        for country_key in (st.session_state.get("selected_countries_manual", []) or [])
+        if country_key not in removed_from_map
+    ]
+    for country_key in added_from_map:
+        if country_key not in updated_manual_countries:
+            updated_manual_countries.append(country_key)
+
+    st.session_state["selected_countries_manual"] = updated_manual_countries
+    st.session_state["map_selected_countries"] = map_selected_countries_from_click
+
 map_selected_countries = st.session_state.get("map_selected_countries", []) or []
 
 country_pool = df.copy()
@@ -632,58 +668,6 @@ else:
             ,
             on_select="rerun",
             selection_mode=["map_country_select"]
-        )
-
-        map_selection_result = st.session_state.get("map_chart")
-        map_selected_countries_from_click = [
-            resolve_country_key(country_name)
-            for country_name in extract_selected_countries(map_selection_result)
-        ]
-        map_selected_countries_from_click = [
-            country_key
-            for country_key in dict.fromkeys(map_selected_countries_from_click)
-            if country_key
-        ]
-
-        if map_selected_countries_from_click != map_selected_countries:
-            removed_from_map = [
-                country_key
-                for country_key in map_selected_countries
-                if country_key not in map_selected_countries_from_click
-            ]
-            added_from_map = [
-                country_key
-                for country_key in map_selected_countries_from_click
-                if country_key not in map_selected_countries
-            ]
-
-            manual_countries = st.session_state.get("selected_countries_manual", []) or []
-            updated_manual_countries = [
-                country_key
-                for country_key in manual_countries
-                if country_key not in removed_from_map
-            ]
-            for country_key in added_from_map:
-                if country_key not in updated_manual_countries:
-                    updated_manual_countries.append(country_key)
-
-            st.session_state["selected_countries_manual"] = updated_manual_countries
-            st.session_state["map_selected_countries"] = map_selected_countries_from_click
-            map_selected_countries = map_selected_countries_from_click
-
-        selected_countries_for_map = list(
-            dict.fromkeys(
-                (st.session_state.get("selected_countries_manual", []) or [])
-                + map_selected_countries
-            )
-        )
-        selected_countries = selected_countries_for_map
-        selected_country_codes = set(
-            df.loc[df["Country_Key"].isin(selected_countries_for_map), "Country_Standardized"]
-            .dropna()
-            .map(country_name_to_numeric_code)
-            .dropna()
-            .tolist()
         )
 
     with explainer_column:
