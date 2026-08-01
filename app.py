@@ -208,7 +208,7 @@ st.markdown(
 # -----------------------------
 # Sidebar controls
 # -----------------------------
-st.sidebar.header("Controls")
+st.sidebar.header("World Explorer")
 
 year_range = st.sidebar.slider(
     "Year range",
@@ -276,7 +276,7 @@ selected_country_codes = set(
 st.header("1. Which countries are happiest?")
 
 st.markdown(
-    "Use the sidebar filters to explore happiness scores across different regions and countries. "
+    "Use the **World Explorer** in the sidebar to explore happiness scores across different regions and countries."
 )
 
 map_data = df[df["Year"].between(start_year, end_year)].copy()
@@ -561,7 +561,7 @@ else:
 # -----------------------------
 # Section 2: Happiness trends
 # -----------------------------
-st.header("2. Happiness Trends Over Time")
+st.header("2. How has happiness changed over time?")
 
 st.markdown(
     "Track average happiness over the selected year range. "
