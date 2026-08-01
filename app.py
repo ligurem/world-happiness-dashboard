@@ -996,11 +996,11 @@ elif geographic_group:
 st.caption("The bars are ordered by the change between the brushed start and end years.")
 
 if "n_countries" not in st.session_state:
-    st.session_state.n_countries = 20
+    st.session_state.n_countries = 10
 
 biggest_drops = change_data.nsmallest(st.session_state.n_countries, "Happiness Change")
 biggest_gains = change_data.nlargest(st.session_state.n_countries, "Happiness Change")
-bar_data = pd.concat([biggest_drops, biggest_gains]).sort_values("Happiness Change")
+bar_data = pd.concat([biggest_gains, biggest_drops]).sort_values("Happiness Change", ascending=False)
 
 bar_chart = (
     alt.Chart(bar_data)
@@ -1009,7 +1009,7 @@ bar_chart = (
         x=alt.X("Happiness Change:Q", title="Happiness change"),
         y=alt.Y(
             "Country_Key:N", title="",
-            sort=alt.EncodingSortField(field="Happiness Change", op="sum", order="ascending")
+            sort=alt.EncodingSortField(field="Happiness Change", op="sum", order="descending")
         ),
         color=alt.Color(
             "Change Direction:N",
