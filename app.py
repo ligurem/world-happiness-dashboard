@@ -972,13 +972,12 @@ change_data["Change Direction"] = change_data["Happiness Change"].apply(
     lambda value: "Increase" if value >= 0 else "Decrease"
 )
 
-if selected_countries:
-    if subregion:
-        comparison_scope = highlight_dynamic_text(subregion)
-    elif geographic_group:
-        comparison_scope = highlight_dynamic_text(geographic_group)
-    else:
-        comparison_scope = "selected countries"
+if subregion:
+    comparison_scope = highlight_dynamic_text(subregion)
+elif geographic_group:
+    comparison_scope = highlight_dynamic_text(geographic_group)
+elif selected_countries:
+    comparison_scope = "selected countries"
 else:
     comparison_scope = "countries worldwide"
 
