@@ -185,6 +185,9 @@ years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
 group_domain = sorted(df["Geographic_Group"].dropna().unique())
 group_range = [COLOR_PALETTE.get(group, "#999999") for group in group_domain]
+MAP_YEAR = 2024
+TREND_START_YEAR = 2015
+TREND_END_YEAR = 2024
 
 # -----------------------------
 # Title
@@ -209,15 +212,6 @@ st.markdown(
 # Sidebar controls
 # -----------------------------
 st.sidebar.header("World Explorer")
-
-year_range = st.sidebar.slider(
-    "Year range",
-    min_value=int(min(years)),
-    max_value=int(max(years)),
-    value=(int(min(years)), int(max(years))),
-    step=1
-)
-start_year, end_year = year_range
 geographic_group = st.sidebar.selectbox(
     "World Region",
     geographic_groups,
@@ -279,7 +273,7 @@ st.markdown(
     "Use the **World Explorer** in the sidebar to see how happiness scores vary across different regions and countries."
 )
 
-map_data = df[df["Year"].between(start_year, end_year)].copy()
+map_data = df[df["Year"] == MAP_YEAR].copy()
 
 if geographic_group:
     map_data = map_data[
@@ -422,7 +416,7 @@ else:
                 ),
                 alt.Tooltip(
                     "avg_happiness:Q",
-                    title="Avg happiness",
+                    title="2024 happiness",
                     format=".2f"
                 ),
                 alt.Tooltip(
@@ -477,7 +471,7 @@ else:
                     ),
                     alt.Tooltip(
                         "avg_happiness:Q",
-                        title="Avg happiness",
+                        title="2024 happiness",
                         format=".2f"
                     ),
                     alt.Tooltip(
@@ -561,14 +555,14 @@ else:
 # -----------------------------
 # Section 2: Happiness trends
 # -----------------------------
-st.header("2. How has happiness changed over time?")
+st.header("2. How has happiness changed from 2015 to 2024?")
 
 st.markdown(
-    "Track average happiness over the selected year range. "
+    "Track average happiness from 2015 to 2024. "
     "Use the World Region and Subregion filters and optionally highlight countries."
 )
 
-trend_data = df[df["Year"].between(start_year, end_year)].copy()
+trend_data = df[df["Year"].between(TREND_START_YEAR, TREND_END_YEAR)].copy()
 
 # ── Global average baseline (always shown) ──────────────────────
 global_avg = (
@@ -775,6 +769,15 @@ st.markdown(
     "Compare countries between two selected years. "
     "The bar chart highlights the largest gains and losses."
 )
+
+year_range = st.slider(
+    "Year range",
+    min_value=TREND_START_YEAR,
+    max_value=TREND_END_YEAR,
+    value=(TREND_START_YEAR, TREND_END_YEAR),
+    step=1
+)
+start_year, end_year = year_range
 
 if start_year >= end_year:
     st.warning(f"Select a different end year to compare with {start_year}.")
