@@ -972,12 +972,20 @@ change_data["Change Direction"] = change_data["Happiness Change"].apply(
     lambda value: "Increase" if value >= 0 else "Decrease"
 )
 
-changes_heading = f"Largest Changes from {highlight_dynamic_text(start_year)} to {highlight_dynamic_text(end_year)}"
+if selected_countries:
+    if subregion:
+        comparison_scope = highlight_dynamic_text(subregion)
+    elif geographic_group:
+        comparison_scope = highlight_dynamic_text(geographic_group)
+    else:
+        comparison_scope = "selected countries"
+else:
+    comparison_scope = "countries worldwide"
 
-if subregion:
-    changes_heading = f"{changes_heading} in {highlight_dynamic_text(subregion)}"
-elif geographic_group:
-    changes_heading = f"{changes_heading} in {highlight_dynamic_text(geographic_group)}"
+changes_heading = (
+    f"Comparing {comparison_scope} from {highlight_dynamic_text(start_year)} "
+    f"to {highlight_dynamic_text(end_year)}"
+)
 
 st.markdown(f"##### {changes_heading}", unsafe_allow_html=True)
 
