@@ -930,8 +930,6 @@ else:
 # -----------------------------
 st.markdown("#### Where has happiness improved or declined the most?")
 
-st.info("**💡 Try a different time period.** Drag across the **Happiness Trajectories** chart above to compare another year range.")
-
 filtered = df.copy()
 if geographic_group:
     filtered = filtered[filtered["Geographic_Group"] == geographic_group]
@@ -962,7 +960,13 @@ change_data["Change Direction"] = change_data["Happiness Change"].apply(
     lambda value: "Increase" if value >= 0 else "Decrease"
 )
 
-st.markdown(f"##### Changes from {start_year} to {end_year}")
+changes_heading = f"Changes from {start_year} to {end_year}"
+if subregion:
+    changes_heading = f"{changes_heading} in {subregion}"
+elif geographic_group:
+    changes_heading = f"{changes_heading} in {geographic_group}"
+
+st.markdown(f"##### {changes_heading}")
 
 col1, col2, col3 = st.columns(3)
 with col1:
@@ -973,6 +977,8 @@ with col3:
     best_country = change_data.loc[change_data["Happiness Change"].idxmax(), "Country_Key"]
     best_change = change_data["Happiness Change"].max()
     st.metric("Largest increase", best_country, round(best_change, 2))
+
+st.info("**💡 Try a different time period.** Drag across the **Happiness Trajectories** chart above to compare another year range.")
 
 changes_title = "Countries with the Largest Happiness Changes"
 if subregion:
