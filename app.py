@@ -206,6 +206,18 @@ def resolve_country_key(selected_country_value):
 
     return selected_country_value
 
+
+def get_map_selected_country(selection_state):
+    if not isinstance(selection_state, dict):
+        return None
+
+    selected_payload = selection_state.get("map_country_select")
+    if selected_payload is None:
+        selected_payload = selection_state.get("selection", {}).get("map_country_select")
+
+    selected_country_value = extract_selected_country(selected_payload)
+    return resolve_country_key(selected_country_value)
+
 years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
 group_domain = sorted(df["Geographic_Group"].dropna().unique())
@@ -585,13 +597,11 @@ else:
             selection_mode=["map_country_select"]
         )
 
-        if isinstance(map_selection_state, dict):
-            selected_payload = map_selection_state.get("map_country_select")
-            selected_country_candidate = extract_selected_country(selected_payload)
-            selected_country_candidate = resolve_country_key(selected_country_candidate)
-            desired_selection = [selected_country_candidate] if selected_country_candidate else []
+        selected_country_candidate = get_map_selected_country(map_selection_state)
+        if selected_country_candidate:
+            desired_selection = [selected_country_candidate]
             current_selection = st.session_state.get("selected_countries", []) or []
-            if desired_selection and current_selection != desired_selection:
+            if current_selection != desired_selection:
                 st.session_state["map_selected_country"] = desired_selection[0]
                 st.session_state["map_selected_country_applied"] = desired_selection[0]
                 st.rerun()
