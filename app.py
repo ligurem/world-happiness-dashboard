@@ -294,13 +294,18 @@ if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["country_filter_signature"] = current_country_filter_signature
     st.session_state["map_last_selection_signature"] = None
     st.session_state["map_last_clicked_country"] = None
+    st.session_state["map_ignore_next_selection"] = True
 
 map_selection_result = st.session_state.get("map_chart")
 map_selection_signature = repr(map_selection_result)
 last_map_selection_signature = st.session_state.get("map_last_selection_signature")
+ignore_next_selection = st.session_state.get("map_ignore_next_selection", False)
 
 current_selected_countries = list(st.session_state.get("selected_countries_manual", []) or [])
-if map_selection_signature != last_map_selection_signature:
+if ignore_next_selection:
+    st.session_state["map_last_selection_signature"] = map_selection_signature
+    st.session_state["map_ignore_next_selection"] = False
+elif map_selection_signature != last_map_selection_signature:
     map_selected_country = resolve_country_key(extract_selected_country(map_selection_result))
 
     if map_selected_country:
