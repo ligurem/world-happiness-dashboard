@@ -996,9 +996,16 @@ with col1:
 with col2:
     st.metric("Average happiness change", round(change_data["Happiness Change"].mean(), 2))
 with col3:
-    best_country = change_data.loc[change_data["Happiness Change"].idxmax(), "Country_Key"]
-    best_change = change_data["Happiness Change"].max()
-    st.metric("Largest increase", best_country, round(best_change, 2))
+    if (change_data["Happiness Change"] > 0).any():
+        best_country = change_data.loc[change_data["Happiness Change"].idxmax(), "Country_Key"]
+        best_change = change_data["Happiness Change"].max()
+        best_label = "Largest increase"
+    else:
+        best_country = change_data.loc[change_data["Happiness Change"].idxmin(), "Country_Key"]
+        best_change = change_data["Happiness Change"].min()
+        best_label = "Largest decrease"
+
+    st.metric(best_label, best_country, round(best_change, 2))
 
     changes_title = "Countries with the Largest Happiness Changes"
 if subregion:
