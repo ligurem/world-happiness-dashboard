@@ -1007,11 +1007,7 @@ with col3:
 
     st.metric(best_label, best_country, round(best_change, 2))
 
-    changes_title = "Countries with the Largest Happiness Changes"
-if subregion:
-    changes_title = f"Largest Changes in {subregion}"
-elif geographic_group:
-    changes_title = f"Largest Changes in {geographic_group}"
+changes_title = "Country-level happiness changes"
 
 st.caption("Each bar shows a country's change in happiness over the selected time range, highlighting the largest gains and declines.")
 
