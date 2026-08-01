@@ -341,35 +341,29 @@ st.markdown(
     "Use the **World Explorer** in the sidebar to see how happiness scores vary across different regions and countries."
 )
 
-map_year_data = df.copy()
+map_data = df.copy()
 
 if geographic_group:
-    map_year_data = map_year_data[
-        map_year_data["Geographic_Group"] == geographic_group
+    map_data = map_data[
+        map_data["Geographic_Group"] == geographic_group
     ]
 
 if subregion:
-    map_year_data = map_year_data[
-        map_year_data["Region_Standardized"] == subregion
+    map_data = map_data[
+        map_data["Region_Standardized"] == subregion
     ]
 
-if map_year_data.empty:
-    map_year = 2024
-else:
-    map_year = 2024 if 2024 in set(map_year_data["Year"].dropna().unique()) else int(map_year_data["Year"].dropna().max())
-
-map_data = map_year_data[map_year_data["Year"] == map_year].copy()
+if not map_data.empty:
+    map_data = (
+        map_data
+        .sort_values(["Country_Standardized", "Year"])
+        .groupby("Country_Standardized", as_index=False)
+        .tail(1)
+        .copy()
+    )
 
 country_map_data = (
     map_data
-    .groupby("Country_Standardized", as_index=False)
-    .agg(
-        {
-            "Happiness score": "mean",
-            "Geographic_Group": "first",
-            "Region_Standardized": "first"
-        }
-    )
     .rename(
         columns={
             "Country_Standardized": "Country",
@@ -462,6 +456,7 @@ else:
                 [
                     "Country",
                     "avg_happiness",
+                    "Year",
                     "world_region",
                     "subregion",
                     "is_selected_country"
@@ -499,8 +494,12 @@ else:
                 ),
                 alt.Tooltip(
                     "avg_happiness:Q",
-                    title=f"{map_year} happiness",
+                    title="Happiness score",
                     format=".2f"
+                ),
+                alt.Tooltip(
+                    "Year:O",
+                    title="Year"
                 ),
                 alt.Tooltip(
                     "world_region:N",
@@ -537,6 +536,7 @@ else:
                     [
                         "Country",
                         "avg_happiness",
+                        "Year",
                         "world_region",
                         "subregion",
                         "is_selected_country"
@@ -554,8 +554,12 @@ else:
                     ),
                     alt.Tooltip(
                         "avg_happiness:Q",
-                        title=f"{map_year} happiness",
+                        title="Happiness score",
                         format=".2f"
+                    ),
+                    alt.Tooltip(
+                        "Year:O",
+                        title="Year"
                     ),
                     alt.Tooltip(
                         "world_region:N",
