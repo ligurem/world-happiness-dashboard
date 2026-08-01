@@ -1136,13 +1136,7 @@ st.markdown(
     "Use the dropdowns to choose a relationship, then inspect the scatterplot and trend line."
 )
 
-correlation_year_options = ["All years"] + years
-
-correlation_year = st.selectbox(
-    "Correlation year",
-    correlation_year_options,
-    index=0
-)
+correlation_year = "All years"
 
 correlation_data = df.copy()
 
@@ -1156,11 +1150,6 @@ if subregion:
         correlation_data["Region_Standardized"] == subregion
     ]
 
-if correlation_year != "All years":
-    correlation_data = correlation_data[
-        correlation_data["Year"] == correlation_year
-    ]
-
 correlation_data = correlation_data.dropna(subset=correlation_variables)
 
 if correlation_data.empty:
@@ -1168,10 +1157,6 @@ if correlation_data.empty:
     st.stop()
 
 global_correlation_data = df.copy()
-if correlation_year != "All years":
-    global_correlation_data = global_correlation_data[
-        global_correlation_data["Year"] == correlation_year
-    ]
 global_correlation_data = global_correlation_data.dropna(subset=correlation_variables)
 
 def build_correlation_heatmap(correlation_frame, title_text):
@@ -1342,11 +1327,6 @@ else:
 
         if subregion and geographic_group:
             continent_data = df[df["Geographic_Group"] == geographic_group].copy()
-
-            if correlation_year != "All years":
-                continent_data = continent_data[
-                    continent_data["Year"] == correlation_year
-                ]
 
             continent_data = continent_data.dropna(subset=[x_variable, y_variable])
 
