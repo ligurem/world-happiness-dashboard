@@ -1167,88 +1167,107 @@ if correlation_data.empty:
     st.error("No data available for the selected correlation filters.")
     st.stop()
 
-corr = correlation_data[correlation_variables].corr()
+global_correlation_data = df.copy()
+if correlation_year != "All years":
+    global_correlation_data = global_correlation_data[
+        global_correlation_data["Year"] == correlation_year
+    ]
+global_correlation_data = global_correlation_data.dropna(subset=correlation_variables)
 
-# Correlation heatmap — single row, happiness score vs all variables
-corr_happiness = (
-    corr[["Happiness score"]]
-    .drop(index="Happiness score")
-    .reset_index()
-    .rename(columns={"index": "Variable", "Happiness score": "Correlation"})
-    .sort_values("Correlation", ascending=False)
-)
+def build_correlation_heatmap(correlation_frame, title_text):
+    correlation_matrix = correlation_frame[correlation_variables].corr()
 
-corr_happiness["Short Label"] = corr_happiness["Variable"].map(short_labels)
-
-# Variable order sorted by correlation value
-sorted_labels = corr_happiness["Short Label"].tolist()
-
-# Add a dummy column to create a single-row heatmap
-corr_happiness["Row"] = "Correlation"
-
-correlation_title = "Factors most associated with happiness"
-if subregion:
-    correlation_title = f"{correlation_title} in {subregion}"
-elif geographic_group:
-    correlation_title = f"{correlation_title} in {geographic_group}"
-
-heatmap_row = (
-    alt.Chart(corr_happiness)
-    .mark_rect()
-    .encode(
-        x=alt.X(
-            "Short Label:N",
-            sort=sorted_labels,
-            title=None
-        ),
-        y=alt.Y(
-            "Row:N",
-            title=None,
-            axis=alt.Axis(labels=False, ticks=False)
-        ),
-        color=alt.Color(
-            "Correlation:Q",
-            scale=alt.Scale(domain=[-1, 1], scheme="redblue"),
-            title="Correlation"
-        ),
-        tooltip=[
-            alt.Tooltip("Variable:N", title="Variable"),
-            alt.Tooltip("Correlation:Q", format=".2f", title="Correlation with Happiness")
-        ]
+    corr_happiness = (
+        correlation_matrix[["Happiness score"]]
+        .drop(index="Happiness score")
+        .reset_index()
+        .rename(columns={"index": "Variable", "Happiness score": "Correlation"})
+        .sort_values("Correlation", ascending=False)
     )
-)
 
-heatmap_text = (
-    alt.Chart(corr_happiness)
-    .mark_text(fontSize=12)
-    .encode(
-        x=alt.X("Short Label:N", sort=sorted_labels),
-        y=alt.Y("Row:N"),
-        text=alt.Text("Correlation:Q", format=".2f"),
-        color=alt.condition(
-            "abs(datum.Correlation) > 0.5",
-            alt.value("white"),
-            alt.value("black")
+    corr_happiness["Short Label"] = corr_happiness["Variable"].map(short_labels)
+    sorted_labels = corr_happiness["Short Label"].tolist()
+    corr_happiness["Row"] = "Correlation"
+
+    heatmap_row = (
+        alt.Chart(corr_happiness)
+        .mark_rect()
+        .encode(
+            x=alt.X(
+                "Short Label:N",
+                sort=sorted_labels,
+                title=None
+            ),
+            y=alt.Y(
+                "Row:N",
+                title=None,
+                axis=alt.Axis(labels=False, ticks=False)
+            ),
+            color=alt.Color(
+                "Correlation:Q",
+                scale=alt.Scale(domain=[-1, 1], scheme="redblue"),
+                title="Correlation"
+            ),
+            tooltip=[
+                alt.Tooltip("Variable:N", title="Variable"),
+                alt.Tooltip("Correlation:Q", format=".2f", title="Correlation with Happiness")
+            ]
         )
     )
-)
 
-corr_heatmap = (
-    alt.layer(heatmap_row, heatmap_text)
-    .properties(
-        width="container",
-        height=200,
-        title=correlation_title
-    ).configure_axisX(
-        labelAngle = 45,
-        labelFontSize = 12
+    heatmap_text = (
+        alt.Chart(corr_happiness)
+        .mark_text(fontSize=12)
+        .encode(
+            x=alt.X("Short Label:N", sort=sorted_labels),
+            y=alt.Y("Row:N"),
+            text=alt.Text("Correlation:Q", format=".2f"),
+            color=alt.condition(
+                "abs(datum.Correlation) > 0.5",
+                alt.value("white"),
+                alt.value("black")
+            )
+        )
     )
-)
+
+    return (
+        alt.layer(heatmap_row, heatmap_text)
+        .properties(
+            width="container",
+            height=200,
+            title=title_text
+        )
+        .configure_axisX(
+            labelAngle=45,
+            labelFontSize=12
+        )
+    )
+
+global_correlation_title = "Global factors most associated with happiness"
+global_corr_heatmap = build_correlation_heatmap(global_correlation_data, global_correlation_title)
 
 heatmap_column, explainer_column = st.columns([4, 2])
 
 with heatmap_column:
-    st.altair_chart(corr_heatmap, use_container_width=True)
+    st.altair_chart(global_corr_heatmap, use_container_width=True)
+
+    if geographic_group or subregion:
+        regional_correlation_data = correlation_data
+        if regional_correlation_data.empty:
+            st.info("No region-specific correlation data is available for the current selection.")
+        else:
+            regional_title = "Region-specific factors most associated with happiness"
+            if subregion:
+                regional_title = f"{regional_title} in {subregion}"
+            elif geographic_group:
+                regional_title = f"{regional_title} in {geographic_group}"
+
+            regional_corr_heatmap = build_correlation_heatmap(regional_correlation_data, regional_title)
+            st.altair_chart(regional_corr_heatmap, use_container_width=True)
+    else:
+        st.info(
+            "Use the **World Explorer** above to select a world region or subregion, then compare how the correlation patterns change."
+        )
 
 with explainer_column:
     st.info(
@@ -1276,7 +1295,7 @@ if x_variable is None:
     st.info("Select a factor above to explore how it relates to happiness score.")
 else:
     y_variable = "Happiness score"
-    selected_corr = corr.loc[y_variable, x_variable]
+    selected_corr = correlation_data[correlation_variables].corr().loc[y_variable, x_variable]
 
     st.markdown(
         f"Showing **{x_variable}** against **{y_variable}** "
