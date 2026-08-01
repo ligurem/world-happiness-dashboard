@@ -713,7 +713,7 @@ else:
 st.header("2. How has happiness changed over time?")
 
 st.markdown(
-    "Use the **World Explorer** to compare happiness trends with the global average from 2015 to 2024."
+    "Compare happiness trends with the global average from 2015 to 2024. Select countries from the map or the **World Explorer** to compare their trends."
 )
 
 trend_data = df[df["Year"].between(TREND_START_YEAR, TREND_END_YEAR)].copy()
