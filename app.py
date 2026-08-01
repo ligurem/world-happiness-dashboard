@@ -363,7 +363,15 @@ if not map_data.empty:
     )
 
 country_map_data = (
-    map_data
+    map_data[
+        [
+            "Country_Standardized",
+            "Happiness score",
+            "Geographic_Group",
+            "Region_Standardized",
+            "Year",
+        ]
+    ]
     .rename(
         columns={
             "Country_Standardized": "Country",
