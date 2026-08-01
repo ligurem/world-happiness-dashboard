@@ -548,6 +548,7 @@ else:
         map_selection_state = st.altair_chart(
             map_chart,
             use_container_width=True
+            ,
             on_select="rerun",
             selection_mode=["map_country_select"]
         )
