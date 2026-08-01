@@ -1144,11 +1144,12 @@ def build_correlation_heatmap(correlation_frame, title_text):
     return heatmap_chart
 
 global_correlation_title = "How do happiness predictors correlate globally?"
-global_corr_heatmap = build_correlation_heatmap(global_correlation_data, global_correlation_title)
+global_corr_heatmap = build_correlation_heatmap(global_correlation_data, None)
 
 heatmap_column, explainer_column = st.columns([4, 2])
 
 with heatmap_column:
+    st.markdown(f"##### {global_correlation_title}")
     st.altair_chart(global_corr_heatmap, use_container_width=True)
 
     if geographic_group or subregion:
