@@ -290,17 +290,7 @@ if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["map_selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
 
-map_chart_state = st.session_state.get("map_chart")
-map_chart_selected_countries = [
-    resolve_country_key(country_name)
-    for country_name in extract_selected_countries(map_chart_state)
-]
-map_chart_selected_countries = [
-    country_key
-    for country_key in dict.fromkeys(map_chart_selected_countries)
-    if country_key
-]
-st.session_state["map_selected_countries"] = map_chart_selected_countries
+map_selected_countries = st.session_state.get("map_selected_countries", []) or []
 
 country_pool = df.copy()
 if geographic_group:
@@ -319,7 +309,7 @@ selected_countries_manual = st.sidebar.multiselect(
 selected_countries_for_map = list(
     dict.fromkeys(
         (st.session_state.get("selected_countries_manual", []) or [])
-        + (st.session_state.get("map_selected_countries", []) or [])
+        + map_selected_countries
     )
 )
 selected_countries = selected_countries_for_map
@@ -639,6 +629,23 @@ else:
             on_select="rerun",
             selection_mode=["map_country_select"]
         )
+
+        map_selection_state = st.session_state.get("map_chart")
+        clicked_country = None
+        if map_selection_state is not None:
+            clicked_country = resolve_country_key(extract_selected_country(map_selection_state))
+
+        if clicked_country:
+            current_map_selected = st.session_state.get("map_selected_countries", []) or []
+            if clicked_country in current_map_selected:
+                updated_map_selected = [country for country in current_map_selected if country != clicked_country]
+            else:
+                updated_map_selected = current_map_selected + [clicked_country]
+
+            updated_map_selected = list(dict.fromkeys(updated_map_selected))
+            if updated_map_selected != current_map_selected:
+                st.session_state["map_selected_countries"] = updated_map_selected
+                st.rerun()
 
     with explainer_column:
         st.info(
