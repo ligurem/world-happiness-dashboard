@@ -273,11 +273,10 @@ selected_country_codes = set(
 # -----------------------------
 # Section 1: World choropleth
 # -----------------------------
-st.header("1. Global Happiness Map")
+st.header("1. Which countries are happiest?")
 
 st.markdown(
-    "See how the average happiness score changes across countries for the selected year range. "
-    "The map averages each country's score over all years in the current selection."
+    "Use the sidebar filters to explore happiness scores across different regions and countries. "
 )
 
 map_data = df[df["Year"].between(start_year, end_year)].copy()
