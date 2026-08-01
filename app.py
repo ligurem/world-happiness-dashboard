@@ -323,9 +323,9 @@ current_country_filter_signature = (geographic_group, subregion)
 previous_country_filter_signature = st.session_state.get("country_filter_signature")
 if previous_country_filter_signature != current_country_filter_signature:
     st.session_state["selected_countries_manual"] = []
-    st.session_state["map_selected_countries"] = []
     st.session_state["country_filter_signature"] = current_country_filter_signature
     st.session_state["map_last_selection_signature"] = None
+    st.session_state["map_last_clicked_country"] = None
     st.session_state["map_ignore_next_selection"] = True
 
 map_selection_result = st.session_state.get("map_chart")
@@ -334,50 +334,31 @@ last_map_selection_signature = st.session_state.get("map_last_selection_signatur
 ignore_next_selection = st.session_state.get("map_ignore_next_selection", False)
 
 current_selected_countries = list(st.session_state.get("selected_countries_manual", []) or [])
-current_map_selected_countries = list(st.session_state.get("map_selected_countries", []) or [])
 if ignore_next_selection:
     st.session_state["map_last_selection_signature"] = map_selection_signature
     st.session_state["map_ignore_next_selection"] = False
 elif map_selection_signature != last_map_selection_signature:
-    map_selected_countries_from_click = [
-        resolve_country_key(country_name)
-        for country_name in extract_selected_countries(map_selection_result)
-    ]
-    map_selected_countries_from_click = [
-        country_key
-        for country_key in dict.fromkeys(map_selected_countries_from_click)
-        if country_key
-    ]
+    map_selected_country = resolve_country_key(extract_selected_country(map_selection_result))
 
-    if map_selected_countries_from_click:
-        removed_from_map = [
-            country_key
-            for country_key in current_map_selected_countries
-            if country_key not in map_selected_countries_from_click
-        ]
-        added_from_map = [
-            country_key
-            for country_key in map_selected_countries_from_click
-            if country_key not in current_map_selected_countries
-        ]
+    if map_selected_country:
+        if map_selected_country in current_selected_countries:
+            current_selected_countries = [
+                country_key
+                for country_key in current_selected_countries
+                if country_key != map_selected_country
+            ]
+        else:
+            current_selected_countries.append(map_selected_country)
 
-        current_selected_countries = [
-            country_key
-            for country_key in current_selected_countries
-            if country_key not in removed_from_map
-        ]
-        for country_key in added_from_map:
-            if country_key not in current_selected_countries:
-                current_selected_countries.append(country_key)
+        st.session_state["map_last_clicked_country"] = map_selected_country
     else:
         current_selected_countries = []
-
-    st.session_state["map_selected_countries"] = map_selected_countries_from_click
+        st.session_state["map_last_clicked_country"] = None
 
     st.session_state["selected_countries_manual"] = list(dict.fromkeys(current_selected_countries))
     st.session_state["map_last_selection_signature"] = map_selection_signature
 
-map_selected_countries = st.session_state.get("map_selected_countries", []) or []
+map_selected_countries = st.session_state["selected_countries_manual"]
 
 country_pool = df.copy()
 if geographic_group:
