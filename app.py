@@ -234,7 +234,6 @@ years = sorted(df["Year"].dropna().unique())
 geographic_groups = sorted(df["Geographic_Group"].dropna().unique())
 group_domain = sorted(df["Geographic_Group"].dropna().unique())
 group_range = [COLOR_PALETTE.get(group, "#999999") for group in group_domain]
-MAP_YEAR = 2024
 TREND_START_YEAR = 2015
 TREND_END_YEAR = 2024
 
@@ -342,17 +341,24 @@ st.markdown(
     "Use the **World Explorer** in the sidebar to see how happiness scores vary across different regions and countries."
 )
 
-map_data = df[df["Year"] == MAP_YEAR].copy()
+map_year_data = df.copy()
 
 if geographic_group:
-    map_data = map_data[
-        map_data["Geographic_Group"] == geographic_group
+    map_year_data = map_year_data[
+        map_year_data["Geographic_Group"] == geographic_group
     ]
 
 if subregion:
-    map_data = map_data[
-        map_data["Region_Standardized"] == subregion
+    map_year_data = map_year_data[
+        map_year_data["Region_Standardized"] == subregion
     ]
+
+if map_year_data.empty:
+    map_year = 2024
+else:
+    map_year = 2024 if 2024 in set(map_year_data["Year"].dropna().unique()) else int(map_year_data["Year"].dropna().max())
+
+map_data = map_year_data[map_year_data["Year"] == map_year].copy()
 
 country_map_data = (
     map_data
@@ -493,7 +499,7 @@ else:
                 ),
                 alt.Tooltip(
                     "avg_happiness:Q",
-                    title="2024 happiness",
+                    title=f"{map_year} happiness",
                     format=".2f"
                 ),
                 alt.Tooltip(
@@ -548,7 +554,7 @@ else:
                     ),
                     alt.Tooltip(
                         "avg_happiness:Q",
-                        title="2024 happiness",
+                        title=f"{map_year} happiness",
                         format=".2f"
                     ),
                     alt.Tooltip(
