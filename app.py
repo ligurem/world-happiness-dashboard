@@ -578,6 +578,7 @@ else:
 
         map_selection_state = st.altair_chart(
             map_chart,
+            key="map_chart",
             use_container_width=True
             ,
             on_select="rerun",
