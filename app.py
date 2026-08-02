@@ -976,8 +976,8 @@ if subregion:
     comparison_scope = highlight_dynamic_text(subregion)
 elif geographic_group:
     comparison_scope = highlight_dynamic_text(geographic_group)
-elif selected_countries:
-    comparison_scope = "selected countries"
+# elif selected_countries:
+#     comparison_scope = "selected countries"
 else:
     comparison_scope = "countries worldwide"
 
