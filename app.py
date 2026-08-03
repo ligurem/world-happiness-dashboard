@@ -1313,12 +1313,8 @@ else:
             )
         )
 
-        if legend_selection is not None:
-            trend_line = trend_line.transform_filter(legend_selection)
-
         if subregion and geographic_group:
             continent_data = df[df["Geographic_Group"] == geographic_group].copy()
-
             continent_data = continent_data.dropna(subset=[x_variable, y_variable])
 
             continent_trend = (
@@ -1335,12 +1331,11 @@ else:
                 )
             )
 
-            relationship_layers.append(continent_trend)
-            relationship_layers.append(trend_line)
-            relationship_scatter = alt.layer(*relationship_layers)
+            relationship_layers.extend([continent_trend, trend_line])
         else:
             relationship_layers.append(trend_line)
-            relationship_scatter = alt.layer(*relationship_layers)
+
+        relationship_scatter = alt.layer(*relationship_layers)
     else:
         relationship_scatter = alt.layer(*relationship_layers)
 
