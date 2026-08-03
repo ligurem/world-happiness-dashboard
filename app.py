@@ -1273,7 +1273,8 @@ else:
         scale=alt.Scale(
             domain=legend_domain,
             range=legend_range
-        )
+        ),
+        legend=None
     )
 
     if legend_selection is not None:
@@ -1287,7 +1288,15 @@ else:
             .encode(
                 x=point_encoding["x"],
                 y=point_encoding["y"],
-                color=point_color,
+                color=alt.Color(
+                    "Geographic_Group:N",
+                    title=None,
+                    scale=alt.Scale(
+                        domain=legend_domain,
+                        range=legend_range
+                    ),
+                    legend=None
+                ),
                 tooltip=point_encoding["tooltip"],
                 opacity=alt.value(0.25)
             )
@@ -1300,7 +1309,15 @@ else:
             .encode(
                 x=point_encoding["x"],
                 y=point_encoding["y"],
-                color=point_color,
+                color=alt.Color(
+                    "Geographic_Group:N",
+                    title=None,
+                    scale=alt.Scale(
+                        domain=legend_domain,
+                        range=legend_range
+                    ),
+                    legend=None
+                ),
                 tooltip=point_encoding["tooltip"],
                 opacity=alt.value(1.0)
             )
