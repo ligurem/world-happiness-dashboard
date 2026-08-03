@@ -1245,16 +1245,6 @@ else:
         legend_domain = group_domain
         legend_range = group_range
 
-    if not geographic_group and not subregion:
-        legend_selection = alt.selection_point(
-            fields=["Geographic_Group"],
-            bind="legend",
-            empty="none",
-            name="region_legend"
-        )
-    else:
-        legend_selection = None
-
     point_encoding = {
         "x": alt.X(f"{x_variable}:Q", title=x_variable),
         "y": alt.Y(f"{y_variable}:Q", title=y_variable),
@@ -1273,83 +1263,20 @@ else:
         scale=alt.Scale(
             domain=legend_domain,
             range=legend_range
-        ),
-        legend=None
+        )
     )
 
-    if legend_selection is not None:
-        relationship_points = (
-            alt.Chart(relationship_data)
-            .add_params(legend_selection)
-            .mark_point(size=80, filled=True)
-            .transform_filter(
-                alt.datum.Geographic_Group != alt.param("region_legend")
-            )
-            .encode(
-                x=point_encoding["x"],
-                y=point_encoding["y"],
-                color=alt.Color(
-                    "Geographic_Group:N",
-                    title=None,
-                    scale=alt.Scale(
-                        domain=legend_domain,
-                        range=legend_range
-                    ),
-                    legend=None
-                ),
-                tooltip=point_encoding["tooltip"],
-                opacity=alt.value(0.25)
-            )
+    relationship_points = (
+        alt.Chart(relationship_data)
+        .mark_point(size=80, filled=True)
+        .encode(
+            x=point_encoding["x"],
+            y=point_encoding["y"],
+            color=point_color,
+            tooltip=point_encoding["tooltip"]
         )
-        selected_relationship_points = (
-            alt.Chart(relationship_data)
-            .add_params(legend_selection)
-            .mark_point(size=80, filled=True)
-            .transform_filter(legend_selection)
-            .encode(
-                x=point_encoding["x"],
-                y=point_encoding["y"],
-                color=alt.Color(
-                    "Geographic_Group:N",
-                    title=None,
-                    scale=alt.Scale(
-                        domain=legend_domain,
-                        range=legend_range
-                    ),
-                    legend=None
-                ),
-                tooltip=point_encoding["tooltip"],
-                opacity=alt.value(1.0)
-            )
-        )
-        legend_chart = (
-            alt.Chart(relationship_data)
-            .mark_point(size=0, opacity=0)
-            .encode(
-                color=alt.Color(
-                    "Geographic_Group:N",
-                    title="World Region",
-                    scale=alt.Scale(
-                        domain=legend_domain,
-                        range=legend_range
-                    )
-                )
-            )
-            .properties(width=0, height=0)
-        )
-        relationship_layers = [relationship_points, selected_relationship_points, legend_chart]
-    else:
-        relationship_points = (
-            alt.Chart(relationship_data)
-            .mark_point(size=80, filled=True)
-            .encode(
-                x=point_encoding["x"],
-                y=point_encoding["y"],
-                color=point_color,
-                tooltip=point_encoding["tooltip"]
-            )
-        )
-        relationship_layers = [relationship_points]
+    )
+    relationship_layers = [relationship_points]
 
     if len(relationship_data) >= 2 and relationship_data[x_variable].nunique() > 1:
         trend_line = (
@@ -1384,12 +1311,9 @@ else:
         else:
             relationship_layers.append(trend_line)
 
-        relationship_scatter = alt.layer(*relationship_layers).configure_legend(orient="bottom")
+        relationship_scatter = alt.layer(*relationship_layers)
     else:
-        relationship_scatter = alt.layer(*relationship_layers).configure_legend(orient="bottom")
-
-    if legend_selection is not None:
-        relationship_scatter = relationship_scatter.add_params(legend_selection)
+        relationship_scatter = alt.layer(*relationship_layers)
 
     scatter_heading = f"{y_variable} vs. {x_variable}"
     if subregion or geographic_group:
