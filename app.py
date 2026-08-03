@@ -1203,6 +1203,7 @@ with explainer_column:
         "- **0**: there is **little clear relationship** in this data."
     )
 st.write("")
+st.write("")
 st.subheader("What do these relationships look like?")
 
 # st.markdown(
@@ -1314,13 +1315,13 @@ else:
     else:
         relationship_scatter = alt.layer(*relationship_layers)
 
-    scatter_heading = f"{y_variable} vs. {x_variable}"
+    scatter_heading = f"{y_variable} vs. {highlight_dynamic_text(x_variable)}"
     if subregion or geographic_group:
         selected_region = subregion if subregion else geographic_group
         scatter_heading = f"{scatter_heading} in {highlight_dynamic_text(selected_region)}"
         st.markdown(f"##### {scatter_heading}", unsafe_allow_html=True)
     else:
-        st.markdown(f"##### {scatter_heading}")
+        st.markdown(f"##### {scatter_heading}", unsafe_allow_html=True)
 
     relationship_scatter = relationship_scatter.properties(
         width="container",
