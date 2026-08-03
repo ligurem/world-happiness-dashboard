@@ -1245,30 +1245,61 @@ else:
         legend_domain = group_domain
         legend_range = group_range
 
-    relationship_points = (
-        alt.Chart(relationship_data)
-        .mark_point(size=80, filled=True)
-        .encode(
-            x=alt.X(f"{x_variable}:Q", title=x_variable),
-            y=alt.Y(f"{y_variable}:Q", title=y_variable),
-            color=alt.Color(
-                "Geographic_Group:N",
-                title="World Region",
-                scale=alt.Scale(
-                    domain=legend_domain,
-                    range=legend_range
-                )
-            ),
-            tooltip=[
-                alt.Tooltip("Country_Key:N", title="Country"),
-                alt.Tooltip("Year:O", title="Year"),
-                alt.Tooltip("Geographic_Group:N", title="World Region"),
-                alt.Tooltip("Region_Standardized:N", title="Subregion"),
-                alt.Tooltip(f"{x_variable}:Q", title=x_variable, format=".2f"),
-                alt.Tooltip(f"{y_variable}:Q", title=y_variable, format=".2f")
-            ]
+    if not geographic_group and not subregion:
+        legend_selection = alt.selection_point(
+            fields=["Geographic_Group"],
+            bind="legend",
+            name="region_legend"
         )
-    )
+    else:
+        legend_selection = None
+
+    point_encoding = {
+        "x": alt.X(f"{x_variable}:Q", title=x_variable),
+        "y": alt.Y(f"{y_variable}:Q", title=y_variable),
+        "color": alt.Color(
+            "Geographic_Group:N",
+            title="World Region",
+            scale=alt.Scale(
+                domain=legend_domain,
+                range=legend_range
+            )
+        ),
+        "tooltip": [
+            alt.Tooltip("Country_Key:N", title="Country"),
+            alt.Tooltip("Year:O", title="Year"),
+            alt.Tooltip("Geographic_Group:N", title="World Region"),
+            alt.Tooltip("Region_Standardized:N", title="Subregion"),
+            alt.Tooltip(f"{x_variable}:Q", title=x_variable, format=".2f"),
+            alt.Tooltip(f"{y_variable}:Q", title=y_variable, format=".2f")
+        ]
+    }
+
+    if legend_selection is not None:
+        relationship_points = (
+            alt.Chart(relationship_data)
+            .mark_point(size=80, filled=True)
+            .encode(
+                **point_encoding,
+                opacity=alt.condition(legend_selection, alt.value(0.25), alt.value(1.0))
+            )
+        )
+        selected_relationship_points = (
+            alt.Chart(relationship_data)
+            .mark_point(size=80, filled=True)
+            .transform_filter(legend_selection)
+            .encode(
+                **point_encoding,
+                opacity=alt.value(1.0)
+            )
+        )
+        relationship_points = alt.layer(relationship_points, selected_relationship_points)
+    else:
+        relationship_points = (
+            alt.Chart(relationship_data)
+            .mark_point(size=80, filled=True)
+            .encode(**point_encoding)
+        )
 
     if len(relationship_data) >= 2 and relationship_data[x_variable].nunique() > 1:
         trend_line = (
@@ -1280,6 +1311,9 @@ else:
                 y=alt.Y(f"{y_variable}:Q")
             )
         )
+
+        if legend_selection is not None:
+            trend_line = trend_line.transform_filter(legend_selection)
 
         if subregion and geographic_group:
             continent_data = df[df["Geographic_Group"] == geographic_group].copy()
