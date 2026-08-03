@@ -1054,8 +1054,8 @@ st.divider()
 st.header("3. What predicts a country's happiness?")
 
 st.markdown(
-    "This section shows how happiness and related factors are correlated. "
-    "By examining these relationships, we can better understand what influences a country's overall happiness."
+    "Explore how different predictors relate to happiness. "
+    "Hover over a colored section to learn more about its predictor."
 )
 
 correlation_year = "All years"
@@ -1093,6 +1093,15 @@ def build_correlation_heatmap(correlation_frame, title_text):
     )
 
     corr_happiness["Short Label"] = corr_happiness["Variable"].map(short_labels)
+    variable_explanations = {
+        "GDP per capita": "Average income/output per person, adjusted for differences in cost of living between countries.",
+        "Social support": "Survey-based measure of whether people report having someone to rely on in difficult times.",
+        "Healthy life expectancy": "Expected years of healthy life.",
+        "Freedom to make life choices": "Survey-based measure of how free people feel to make important life decisions.",
+        "Generosity": "Survey-based measure related to whether people recently donated money to charity.",
+        "Perceptions of corruption": "Survey-based measure of whether people believe corruption is widespread in government and business."
+    }
+    corr_happiness["Variable_Explanation"] = corr_happiness["Variable"].map(variable_explanations)
     sorted_labels = corr_happiness["Short Label"].tolist()
     corr_happiness["Row"] = "Correlation"
 
@@ -1117,6 +1126,7 @@ def build_correlation_heatmap(correlation_frame, title_text):
             ),
             tooltip=[
                 alt.Tooltip("Variable:N", title="Variable"),
+                alt.Tooltip("Variable_Explanation:N", title="Explanation"),
                 alt.Tooltip("Correlation:Q", format=".2f", title="Correlation with Happiness")
             ]
         )
