@@ -1230,6 +1230,21 @@ else:
 
     relationship_data = correlation_data.dropna(subset=[x_variable, y_variable])
 
+    if geographic_group:
+        legend_domain = [geographic_group]
+        legend_range = [COLOR_PALETTE.get(geographic_group, "#999999")]
+    elif subregion:
+        filtered_regions = relationship_data["Geographic_Group"].dropna().unique().tolist()
+        if len(filtered_regions) == 1:
+            legend_domain = filtered_regions
+            legend_range = [COLOR_PALETTE.get(filtered_regions[0], "#999999")]
+        else:
+            legend_domain = group_domain
+            legend_range = group_range
+    else:
+        legend_domain = group_domain
+        legend_range = group_range
+
     relationship_points = (
         alt.Chart(relationship_data)
         .mark_point(size=80, filled=True)
@@ -1240,8 +1255,8 @@ else:
                 "Geographic_Group:N",
                 title="World Region",
                 scale=alt.Scale(
-                    domain=[geographic_group] if geographic_group else group_domain,
-                    range=[COLOR_PALETTE.get(geographic_group, "#999999")] if geographic_group else group_range
+                    domain=legend_domain,
+                    range=legend_range
                 )
             ),
             tooltip=[
