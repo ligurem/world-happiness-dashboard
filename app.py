@@ -1335,6 +1335,7 @@ else:
                     )
                 )
             )
+            .properties(width=0, height=0)
         )
         relationship_layers = [relationship_points, selected_relationship_points, legend_chart]
     else:
@@ -1383,9 +1384,9 @@ else:
         else:
             relationship_layers.append(trend_line)
 
-        relationship_scatter = alt.layer(*relationship_layers)
+        relationship_scatter = alt.layer(*relationship_layers).configure_legend(orient="bottom")
     else:
-        relationship_scatter = alt.layer(*relationship_layers)
+        relationship_scatter = alt.layer(*relationship_layers).configure_legend(orient="bottom")
 
     if legend_selection is not None:
         relationship_scatter = relationship_scatter.add_params(legend_selection)
