@@ -1286,7 +1286,16 @@ else:
             )
             .encode(
                 **point_encoding,
-                opacity=alt.value(0.25)
+                opacity=alt.value(0.25),
+                color=alt.Color(
+                    "Geographic_Group:N",
+                    title="World Region",
+                    scale=alt.Scale(
+                        domain=legend_domain,
+                        range=legend_range
+                    ),
+                    legend=None
+                )
             )
         )
         selected_relationship_points = (
@@ -1296,7 +1305,16 @@ else:
             .transform_filter(legend_selection)
             .encode(
                 **point_encoding,
-                opacity=alt.value(1.0)
+                opacity=alt.value(1.0),
+                color=alt.Color(
+                    "Geographic_Group:N",
+                    title="World Region",
+                    scale=alt.Scale(
+                        domain=legend_domain,
+                        range=legend_range
+                    ),
+                    legend=None
+                )
             )
         )
         relationship_layers = [relationship_points, selected_relationship_points]
