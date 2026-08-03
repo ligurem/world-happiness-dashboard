@@ -1281,9 +1281,12 @@ else:
             alt.Chart(relationship_data)
             .add_params(legend_selection)
             .mark_point(size=80, filled=True)
+            .transform_filter(
+                alt.datum.Geographic_Group != alt.param("region_legend")
+            )
             .encode(
                 **point_encoding,
-                opacity=alt.condition(legend_selection, alt.value(0.25), alt.value(1.0))
+                opacity=alt.value(0.25)
             )
         )
         selected_relationship_points = (
