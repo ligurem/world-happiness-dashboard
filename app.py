@@ -1293,13 +1293,14 @@ else:
                 opacity=alt.value(1.0)
             )
         )
-        relationship_points = alt.layer(relationship_points, selected_relationship_points)
+        relationship_layers = [relationship_points, selected_relationship_points]
     else:
         relationship_points = (
             alt.Chart(relationship_data)
             .mark_point(size=80, filled=True)
             .encode(**point_encoding)
         )
+        relationship_layers = [relationship_points]
 
     if len(relationship_data) >= 2 and relationship_data[x_variable].nunique() > 1:
         trend_line = (
@@ -1334,13 +1335,17 @@ else:
                 )
             )
 
-            relationship_scatter = alt.layer(
-                relationship_points, continent_trend, trend_line
-            )
+            relationship_layers.append(continent_trend)
+            relationship_layers.append(trend_line)
+            relationship_scatter = alt.layer(*relationship_layers)
         else:
-            relationship_scatter = alt.layer(relationship_points, trend_line)
+            relationship_layers.append(trend_line)
+            relationship_scatter = alt.layer(*relationship_layers)
     else:
-        relationship_scatter = relationship_points
+        relationship_scatter = alt.layer(*relationship_layers)
+
+    if legend_selection is not None:
+        relationship_scatter = relationship_scatter.add_params(legend_selection)
 
     scatter_heading = f"{y_variable} vs. {x_variable}"
     if subregion or geographic_group:
