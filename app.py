@@ -1322,7 +1322,21 @@ else:
                 opacity=alt.value(1.0)
             )
         )
-        relationship_layers = [relationship_points, selected_relationship_points]
+        legend_chart = (
+            alt.Chart(relationship_data)
+            .mark_point(size=0, opacity=0)
+            .encode(
+                color=alt.Color(
+                    "Geographic_Group:N",
+                    title="World Region",
+                    scale=alt.Scale(
+                        domain=legend_domain,
+                        range=legend_range
+                    )
+                )
+            )
+        )
+        relationship_layers = [relationship_points, selected_relationship_points, legend_chart]
     else:
         relationship_points = (
             alt.Chart(relationship_data)
