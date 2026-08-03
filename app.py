@@ -1217,7 +1217,7 @@ x_variable = st.selectbox(
 )
 
 if x_variable is None:
-    st.info("ℹ️ Choose a predictor above to generate a scatterplot.")
+    st.info("**ℹ️ Choose a predictor above to generate a scatterplot.**")
 else:
     y_variable = "Happiness score"
     selected_corr = correlation_data[correlation_variables].corr().loc[y_variable, x_variable]
@@ -1329,6 +1329,8 @@ else:
 
     st.altair_chart(relationship_scatter, use_container_width=True)
 
+st.write("")
+st.divider()
 st.write("")
 
 st.caption(
