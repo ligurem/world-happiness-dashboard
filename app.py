@@ -1051,10 +1051,11 @@ st.altair_chart(bar_chart, use_container_width=True)
 # -----------------------------
 st.divider()
 
-st.header("3. Correlation Explorer")
+st.header("3. What predicts a country's happiness?")
 
 st.markdown(
     "This section shows how happiness and related factors are correlated. "
+    "By examining these relationships, we can better understand what influences a country's overall happiness."
 )
 
 correlation_year = "All years"
@@ -1132,7 +1133,8 @@ def build_correlation_heatmap(correlation_frame, title_text):
                 "abs(datum.Correlation) > 0.5",
                 alt.value("white"),
                 alt.value("black")
-            )
+            ),
+            tooltip=alt.value(None)
         )
     )
 
