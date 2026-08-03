@@ -1205,19 +1205,19 @@ with explainer_column:
 
 st.subheader("What do these relationships look like?")
 
-st.markdown(
-    "Select a predictor to explore its relationship with happiness score. "
-)
+# st.markdown(
+#     "Select a predictor to explore its relationship with happiness score. "
+# )
 
 x_variable = st.selectbox(
-    "",
+    "Select a predictor to explore its relationship with happiness score.",
     [v for v in correlation_variables if v != "Happiness score"],
     index=None,
     placeholder="Select a predictor..."
 )
 
 if x_variable is None:
-    st.info("**ℹ️ Choose a predictor above to generate a scatterplot.**")
+    st.info("ℹ️ Choose a predictor above to generate a scatterplot.")
 else:
     y_variable = "Happiness score"
     selected_corr = correlation_data[correlation_variables].corr().loc[y_variable, x_variable]
