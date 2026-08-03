@@ -1054,8 +1054,8 @@ st.divider()
 st.header("3. What predicts a country's happiness?")
 
 st.markdown(
-    "Explore how different predictors relate to happiness. "
-    "Hover over a colored section to learn more about its predictor."
+    "Explore how different predictors relate to happiness score. "
+    "Hover over a colored section to learn what each predictor measures."
 )
 
 correlation_year = "All years"
@@ -1203,22 +1203,21 @@ with explainer_column:
         "- **0**: there is **little clear relationship** in this data."
     )
 
-st.subheader("A Closer Look at One Relationship")
+st.subheader("What do these relationships look like?")
 
 st.markdown(
-    "Pick one factor from the heatmap above to see how it relates to happiness score in more detail. "
-    "The scatterplot keeps happiness score on the y-axis so you can focus on the pattern for the selected factor."
+    "Select a predictor to explore its relationship with happiness score. "
 )
 
 x_variable = st.selectbox(
-    "Choose a factor to explore",
-    [v for v in correlation_variables if v != "Happiness score"],
-    index=None,
-    placeholder="Select a factor from the heatmap"
+    # "Choose a factor to explore",
+    # # [v for v in correlation_variables if v != "Happiness score"],
+    # index=None,
+    placeholder="Select a predictor..."
 )
 
 if x_variable is None:
-    st.info("Select a factor above to explore how it relates to happiness score.")
+    st.info("**ℹ️ Choose a predictor above to generate a scatterplot.**")
 else:
     y_variable = "Happiness score"
     selected_corr = correlation_data[correlation_variables].corr().loc[y_variable, x_variable]
