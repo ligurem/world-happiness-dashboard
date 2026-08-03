@@ -1211,8 +1211,8 @@ st.markdown(
 
 x_variable = st.selectbox(
     # "Choose a factor to explore",
-    # # [v for v in correlation_variables if v != "Happiness score"],
-    # index=None,
+    # [v for v in correlation_variables if v != "Happiness score"],
+    index=None,
     placeholder="Select a predictor..."
 )
 
