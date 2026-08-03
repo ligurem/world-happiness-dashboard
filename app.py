@@ -1258,14 +1258,6 @@ else:
     point_encoding = {
         "x": alt.X(f"{x_variable}:Q", title=x_variable),
         "y": alt.Y(f"{y_variable}:Q", title=y_variable),
-        "color": alt.Color(
-            "Geographic_Group:N",
-            title="World Region",
-            scale=alt.Scale(
-                domain=legend_domain,
-                range=legend_range
-            )
-        ),
         "tooltip": [
             alt.Tooltip("Country_Key:N", title="Country"),
             alt.Tooltip("Year:O", title="Year"),
@@ -1275,6 +1267,14 @@ else:
             alt.Tooltip(f"{y_variable}:Q", title=y_variable, format=".2f")
         ]
     }
+    point_color = alt.Color(
+        "Geographic_Group:N",
+        title="World Region",
+        scale=alt.Scale(
+            domain=legend_domain,
+            range=legend_range
+        )
+    )
 
     if legend_selection is not None:
         relationship_points = (
@@ -1285,17 +1285,11 @@ else:
                 alt.datum.Geographic_Group != alt.param("region_legend")
             )
             .encode(
-                **point_encoding,
-                opacity=alt.value(0.25),
-                color=alt.Color(
-                    "Geographic_Group:N",
-                    title="World Region",
-                    scale=alt.Scale(
-                        domain=legend_domain,
-                        range=legend_range
-                    ),
-                    legend=None
-                )
+                x=point_encoding["x"],
+                y=point_encoding["y"],
+                color=point_color,
+                tooltip=point_encoding["tooltip"],
+                opacity=alt.value(0.25)
             )
         )
         selected_relationship_points = (
@@ -1304,17 +1298,11 @@ else:
             .mark_point(size=80, filled=True)
             .transform_filter(legend_selection)
             .encode(
-                **point_encoding,
-                opacity=alt.value(1.0),
-                color=alt.Color(
-                    "Geographic_Group:N",
-                    title="World Region",
-                    scale=alt.Scale(
-                        domain=legend_domain,
-                        range=legend_range
-                    ),
-                    legend=None
-                )
+                x=point_encoding["x"],
+                y=point_encoding["y"],
+                color=point_color,
+                tooltip=point_encoding["tooltip"],
+                opacity=alt.value(1.0)
             )
         )
         relationship_layers = [relationship_points, selected_relationship_points]
@@ -1322,7 +1310,12 @@ else:
         relationship_points = (
             alt.Chart(relationship_data)
             .mark_point(size=80, filled=True)
-            .encode(**point_encoding)
+            .encode(
+                x=point_encoding["x"],
+                y=point_encoding["y"],
+                color=point_color,
+                tooltip=point_encoding["tooltip"]
+            )
         )
         relationship_layers = [relationship_points]
 
