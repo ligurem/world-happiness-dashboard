@@ -1202,7 +1202,7 @@ with explainer_column:
         "- **-1**: as one goes up, the other tends to **fall**.\n"
         "- **0**: there is **little clear relationship** in this data."
     )
-
+st.write("")
 st.subheader("What do these relationships look like?")
 
 # st.markdown(
@@ -1210,7 +1210,7 @@ st.subheader("What do these relationships look like?")
 # )
 
 x_variable = st.selectbox(
-    "Select a predictor to explore its relationship with happiness score.",
+    "Select a predictor to explore its relationship with happiness score across countries.",
     [v for v in correlation_variables if v != "Happiness score"],
     index=None,
     placeholder="Select a predictor..."
