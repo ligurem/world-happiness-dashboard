@@ -1249,6 +1249,7 @@ else:
         legend_selection = alt.selection_point(
             fields=["Geographic_Group"],
             bind="legend",
+            empty="none",
             name="region_legend"
         )
     else:
@@ -1278,6 +1279,7 @@ else:
     if legend_selection is not None:
         relationship_points = (
             alt.Chart(relationship_data)
+            .add_params(legend_selection)
             .mark_point(size=80, filled=True)
             .encode(
                 **point_encoding,
@@ -1286,6 +1288,7 @@ else:
         )
         selected_relationship_points = (
             alt.Chart(relationship_data)
+            .add_params(legend_selection)
             .mark_point(size=80, filled=True)
             .transform_filter(legend_selection)
             .encode(
